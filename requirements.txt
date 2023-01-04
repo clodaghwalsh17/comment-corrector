@@ -1,0 +1,2 @@
+comment_parser
+python-magic-bin
