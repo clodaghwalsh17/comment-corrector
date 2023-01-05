@@ -1,5 +1,3 @@
-package comment_corrector.sample_code;
-
 public class Test {
     /* A multiline comment
     * that spans multiple lines
