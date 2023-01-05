@@ -6,6 +6,5 @@ env/
 .vscode
 
 ### Java ###
-!target/*.jar
 target/*
-
+!target/*.jar
