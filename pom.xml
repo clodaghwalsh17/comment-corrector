@@ -21,15 +21,21 @@
 
         <dependency>
             <groupId>com.github.gumtreediff</groupId>
-            <artifactId>client</artifactId>
+            <artifactId>gen.jdt</artifactId>
             <version>3.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.gumtreediff</groupId>
-            <artifactId>gen.jdt</artifactId>
+            <artifactId>gen.python</artifactId>
             <version>3.0.0</version>
-          </dependency>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.gumtreediff</groupId>
+            <artifactId>gen.c</artifactId>
+            <version>3.0.0</version>
+        </dependency>       
 
     </dependencies>
 
