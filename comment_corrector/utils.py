@@ -28,10 +28,15 @@ class Utils:
         return [mapping['language'] for mapping in self.mapping]
 
     def get_supported_file_extensions(self):
-        return [mapping['file_extension'] for mapping in self.mapping]
+        file_extensions = [mapping['file_extension'] for mapping in self.mapping]
+        return self.flatten_to_list(file_extensions)
     
     def get_mapping(self):
         return self.mapping
+
+    def flatten_to_list(self, struct):
+        flatten_operation = lambda *n: (e for a in n for e in (flatten_operation(*a) if isinstance(a, (tuple, list)) else (a,)))
+        return list(flatten_operation(struct))
 
     def validate_files(self, files):
         if (self.get_file_extension(files[0]) == self.get_file_extension(files[1])) and self.get_file_extension(files[0]) in self.get_supported_file_extensions():
