@@ -3,15 +3,15 @@ import sys
 
 SEMANTIC_DIFF_TOOL_PATH = "target/semanticDiff-1-jar-with-dependencies.jar"
 
-def diff(files):
+def diff(files, language):
     try:
-        return run_gumtree(files)
+        return run_gumtree(files, language)
     except Exception as e:
         print(e)  
         sys.exit()
 
-def run_gumtree(files):  
-    process = subprocess.run(["java", "-jar", SEMANTIC_DIFF_TOOL_PATH, files[0], files[1]], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+def run_gumtree(files, language):  
+    process = subprocess.run(["java", "-jar", SEMANTIC_DIFF_TOOL_PATH, language, files[0], files[1]], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     if not process.stderr:
         return process.stdout
     else:

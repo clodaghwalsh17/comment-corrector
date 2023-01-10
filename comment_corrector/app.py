@@ -25,5 +25,6 @@ def run():
     comments = list_comments(args.file_v1, utils.get_mime_type(args.file_v1))
     print(comments)
     
-    edit_script = diff(files)
+    print(utils.get_programming_language(args.file_v1))
+    edit_script = diff(files, utils.get_programming_language(args.file_v1))
     print(edit_script)

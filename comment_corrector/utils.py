@@ -5,8 +5,8 @@ SOURCE = "supported_languages.json"
 
 class Utils: 
     def __init__(self):
-        f = open(SOURCE)
-        data = json.load(f)
+        with open(SOURCE) as f:
+            data = json.load(f)
         # self.mapping is a list of dictionaries
         self.mapping = data['supported_languages']
 
@@ -18,6 +18,11 @@ class Utils:
         extension = self.get_file_extension(file)
         map = next((mapping for mapping in self.mapping if extension in mapping['file_extension']), None)
         return map['mime_type']
+
+    def get_programming_language(self, file):
+        extension = self.get_file_extension(file)
+        map = next((mapping for mapping in self.mapping if extension in mapping['file_extension']), None)
+        return map['language']
 
     def get_supported_languages(self):
         return [mapping['language'] for mapping in self.mapping]
