@@ -1,2 +1,10 @@
+### Python ###
 __pycache__/
 env/
+
+### VS Code ###
+.vscode
+
+### Java ###
+target/*
+!target/*.jar

@@ -1,0 +1,19 @@
+{
+    "supported_languages": [
+        {
+            "language" : "Java",
+            "file_extension" : ".java",
+            "mime_type" : "text/x-java-source"
+        },
+        {
+            "language" : "Python",
+            "file_extension" : ".py",
+            "mime_type" : "text/x-python"
+        },
+        {
+            "language" : "C",
+            "file_extension" : [".c", ".h"],
+            "mime_type" : "text/x-c"
+        }      
+    ]
+}
