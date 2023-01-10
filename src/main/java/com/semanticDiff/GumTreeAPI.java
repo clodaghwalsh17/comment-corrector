@@ -38,8 +38,8 @@ public class GumTreeAPI {
             System.out.println(a);
         }
 
-        TreeContext tc = treeGenerator.generateFrom().file(dstFile);
+        TreeContext treeContext = treeGenerator.generateFrom().file(dstFile);
         System.out.println("\n----------------------- JSON Format of tree -----------------------\n");
-        System.out.println(TreeIoUtils.toJson(tc));
+        System.out.println(TreeIoUtils.toJson(treeContext));
     }
 }
