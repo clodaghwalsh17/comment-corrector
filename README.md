@@ -2,7 +2,7 @@
 
 ## About
 
-Comment Corrector is a GitHub Action that analyses source code for any discrepancies between a comment and the code it describes. Comment Corrector is predominately written in Python, while the GumTree API is called through Java.
+Comment Corrector is a GitHub Action that analyses source code for any discrepancies between a comment and the code it describes. Comment Corrector is predominately written in Python3, while the GumTree API is called through Java.
 
 ## Supported Languages
 
@@ -25,7 +25,7 @@ Comment Corrector can be ran as a standalone application if the following depend
 All Python dependencies can be found in the `requirements.txt` file. Issuing the following command installs the necessary dependencies.
 
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 #### GumTree Dependencies
