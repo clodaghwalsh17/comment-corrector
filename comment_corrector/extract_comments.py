@@ -5,6 +5,9 @@ from operator import itemgetter
 import sys
 import re
 
+DOC_COMMENT_KEYWORDS = ["parameter", "parameters", "param", "params", "return", "returns", \
+"input", "output", "type", "argument", "arguments", "arg", "args", "kwargs", "accepts", "function", "call"]
+
 def list_comments(file, mime):
     try:
         comments = comment_parser.extract_comments(file, mime)
@@ -37,8 +40,15 @@ def find_python_documentation_comments(file):
     pattern = "\"{3}[ \t\n\r]*([<>%!@#'._,;:a-zA-Z0-9\+-/\*=\(\)\[\]\n ]+)\"{3}"
     match = re.compile(pattern)
     for iter in re.finditer(match, code):
-        line_number = next(i for i in range(len(line)) if line[i] > iter.start(1))
-        doc_comments.append(create_comment(iter.group(1), line_number, True))
+        string = iter.group(1)
+
+        is_doc_comment = False
+        for keyword in DOC_COMMENT_KEYWORDS:
+            is_doc_comment = is_doc_comment or keyword in string or keyword.capitalize() in string
+        
+        if is_doc_comment:
+            line_number = next(i for i in range(len(line)) if line[i] > iter.start(1))
+            doc_comments.append(create_comment(string, line_number, True))
   
     return doc_comments
 
