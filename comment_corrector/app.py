@@ -22,9 +22,13 @@ def run():
         print(e)  
         sys.exit()
     
-    comments = list_comments(args.file_v1, utils.get_mime_type(args.file_v1))
-    print(comments)
-    
-    print(utils.get_programming_language(args.file_v1))
-    edit_script = diff(files, utils.get_programming_language(args.file_v1))
-    print(edit_script)
+    mime_type = utils.get_mime_type(args.file_v1)
+    comments_file1 = list_comments(args.file_v1, mime_type)
+    comments_file2 = list_comments(args.file_v2, mime_type) 
+      
+    if comments_file2:
+        if comments_file1:
+            edit_script = diff(files, utils.get_programming_language(args.file_v1))
+            print(edit_script)
+        else:
+            print("New comments added")       
