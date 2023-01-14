@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '**.java'
+      - 'pom.xml'
 
 jobs:
   update-jar:
