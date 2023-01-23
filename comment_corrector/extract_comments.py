@@ -1,5 +1,5 @@
 from comment_parser import comment_parser
-from comment_parser.parsers.common import Comment
+from comment_corrector.comment import Comment
 from itertools import groupby
 from operator import itemgetter
 import sys
@@ -8,10 +8,13 @@ import re
 DOC_COMMENT_KEYWORDS = ["parameter", "parameters", "param", "params", "return", "returns", \
 "input", "output", "type", "argument", "arguments", "arg", "args", "kwargs", "accepts", "function", "call"]
 
+# TODO private methods
+
 def list_comments(file, mime):
     try:
-        comments = comment_parser.extract_comments(file, mime)
-        if mime == "text/x-python":
+        comments = [Comment(comment.text(), comment.line_number(), comment.is_multiline()) for comment in comment_parser.extract_comments(file, mime)]
+        
+        if mime == "text/x-python":                   
             # Comment Corrector doesn't track shebang or encoding
             comments = [comment for comment in comments if not is_shebang(comment) and not is_encoding(comment)]
             
@@ -20,7 +23,7 @@ def list_comments(file, mime):
             doc_comments = find_python_documentation_comments(file)
             if doc_comments:
                 comments.extend(doc_comments)
-                comments.sort(key=line_number_sort)
+                comments.sort(key=line_number_sort) 
             
         return comments
     except Exception as e:        
@@ -48,7 +51,7 @@ def find_python_documentation_comments(file):
         
         if is_doc_comment:
             line_number = next(i for i in range(len(line)) if line[i] > iter.start(1))
-            doc_comments.append(create_comment(string, line_number, True))
+            doc_comments.append(Comment(string, line_number, True))            
   
     return doc_comments
 
@@ -62,13 +65,14 @@ def group_multiline_comments(comment_list):
     for range in consecutive_numbers_range: 
         if len(range) == 1:
             # Single line comment
-            comments.append(comment_list[range[0]])
+            comment = comment_list[range[0]]
+            comments.append(Comment(comment.text(), comment.line_number(), comment.is_multiline()))
         else:
             # Multiline comment
             start_line = comment_list[range[0]].line_number()
             comment_fragments = [comment_list[i].text() for i in range]           
             comment = ''.join(comment_fragments)
-            comments.append(create_comment(comment, start_line, True))
+            comments.append(Comment(comment, start_line, True))
     
     return comments
 
@@ -83,6 +87,3 @@ def is_encoding(comment):
 
 def line_number_sort(comment):
     return comment.line_number()
-
-def create_comment(comment, line_number, is_multiline):
-    return Comment(comment, line_number, is_multiline)
