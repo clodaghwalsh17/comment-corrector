@@ -8,19 +8,17 @@ import re
 DOC_COMMENT_KEYWORDS = ["parameter", "parameters", "param", "params", "return", "returns", \
 "input", "output", "type", "argument", "arguments", "arg", "args", "kwargs", "accepts", "function", "call"]
 
-# TODO private methods
-
 def list_comments(file, mime):
     try:
         comments = [Comment(comment.text(), comment.line_number(), comment.is_multiline()) for comment in comment_parser.extract_comments(file, mime)]
         
         if mime == "text/x-python":                   
             # Comment Corrector doesn't track shebang or encoding
-            comments = [comment for comment in comments if not is_shebang(comment) and not is_encoding(comment)]
+            comments = [comment for comment in comments if not __is_shebang(comment) and not __is_encoding(comment)]
             
-            comments = group_multiline_comments(comments)
+            comments = __group_multiline_comments(comments)
             
-            doc_comments = find_python_documentation_comments(file)
+            doc_comments = __find_python_documentation_comments(file)
             if doc_comments:
                 comments.extend(doc_comments)
                 comments.sort(key=line_number_sort) 
@@ -30,7 +28,7 @@ def list_comments(file, mime):
         print(e)  
         sys.exit()  
 
-def find_python_documentation_comments(file):
+def __find_python_documentation_comments(file):
     doc_comments = []
     with open(file) as f:
         code = f.read()
@@ -55,7 +53,7 @@ def find_python_documentation_comments(file):
   
     return doc_comments
 
-def group_multiline_comments(comment_list): 
+def __group_multiline_comments(comment_list): 
     comments = []
     comment_line_numbers = [comment.line_number() for comment in comment_list]
     consecutive_numbers_range = []
@@ -76,14 +74,14 @@ def group_multiline_comments(comment_list):
     
     return comments
 
-def is_shebang(comment):
+def __is_shebang(comment):
     return comment.line_number() == 1 and comment.text()[0] == "!"
 
-def is_encoding(comment):
+def __is_encoding(comment):
     txt = comment.text()
     regex = "coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
     result = re.search(regex, txt)
     return comment.line_number() <= 2 and result is not None
 
-def line_number_sort(comment):
+def __line_number_sort(comment):
     return comment.line_number()
