@@ -10,7 +10,7 @@ DOC_COMMENT_KEYWORDS = ["parameter", "parameters", "param", "params", "return", 
 
 def list_comments(file, mime):
     try:
-        comments = [Comment(comment.text(), comment.line_number(), comment.is_multiline()) for comment in comment_parser.extract_comments(file, mime)]
+        comments = [Comment.from_comment_parser(comment) for comment in comment_parser.extract_comments(file, mime)]
         
         if mime == "text/x-python":                   
             # Comment Corrector doesn't track shebang or encoding
@@ -64,7 +64,7 @@ def __group_multiline_comments(comment_list):
         if len(range) == 1:
             # Single line comment
             comment = comment_list[range[0]]
-            comments.append(Comment(comment.text(), comment.line_number(), comment.is_multiline()))
+            comments.append(Comment.from_comment_parser(comment))
         else:
             # Multiline comment
             start_line = comment_list[range[0]].line_number()
