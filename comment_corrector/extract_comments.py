@@ -21,7 +21,7 @@ def list_comments(file, mime):
             doc_comments = __find_python_documentation_comments(file)
             if doc_comments:
                 comments.extend(doc_comments)
-                comments.sort(key=line_number_sort) 
+                comments.sort(key=__line_number_sort) 
             
         return comments
     except Exception as e:        
@@ -49,7 +49,7 @@ def __find_python_documentation_comments(file):
         
         if is_doc_comment:
             line_number = next(i for i in range(len(line)) if line[i] > iter.start(1))
-            doc_comments.append(Comment(string, line_number, True))            
+            doc_comments.append(Comment(string, line_number, True, category="documentation"))            
   
     return doc_comments
 
