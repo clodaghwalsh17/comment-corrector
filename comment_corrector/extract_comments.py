@@ -1,7 +1,5 @@
 from comment_parser import comment_parser
 from comment_corrector.comment import Comment
-from itertools import groupby
-from operator import itemgetter
 import sys
 import re
 
@@ -12,11 +10,11 @@ def list_comments(file, mime):
     try:
         comments = [Comment.from_comment_parser(comment) for comment in comment_parser.extract_comments(file, mime)]
         
-        if mime == "text/x-python":                   
+        if mime == "text/x-python":               
+            comments = __group_python_multiline_comments(file, comments)
+            
             # Comment Corrector doesn't track shebang or encoding
             comments = [comment for comment in comments if not __is_shebang(comment) and not __is_encoding(comment)]
-            
-            comments = __group_multiline_comments(comments)
             
             doc_comments = __find_python_documentation_comments(file)
             if doc_comments:
@@ -53,29 +51,41 @@ def __find_python_documentation_comments(file):
   
     return doc_comments
 
-def __group_multiline_comments(comment_list): 
-    comments = []
-    comment_line_numbers = [comment.line_number() for comment in comment_list]
-    consecutive_numbers_range = []
-    for k, g in groupby(enumerate(comment_line_numbers), lambda x: x[0]-x[1]):
-        consecutive_numbers_range.append(list(map(itemgetter(0), g)))
+def __group_python_multiline_comments(file, comment_list):
+    start_line = 0
+    end_line = 0
+    line_number = 0
+    comment = ''
+
+    with open(file) as f:
+        while True:
+            line = f.readline()
+            line_number += 1
+
+            if not line:
+                break          
+            
+            if comment and line.strip().startswith('#'):
+                comment += line.strip()[1:]
+                end_line += 1
+                comment_list = [comment for comment in comment_list if comment.text() != line.strip()[1:]]
+            elif line.strip().startswith('#'):
+                start_line = line_number
+                end_line = line_number
+                comment += line.strip()[1:]
+                comment_list = [comment for comment in comment_list if comment.text() != line.strip()[1:]]
+            elif comment and start_line != end_line:
+                comment_list.append(Comment(comment, start_line, True))
+                comment = ''
+            elif comment:
+                comment_list.append(Comment(comment, start_line, False))
+                comment = ''
     
-    for range in consecutive_numbers_range: 
-        if len(range) == 1:
-            # Single line comment
-            comment = comment_list[range[0]]
-            comments.append(Comment.from_comment_parser(comment))
-        else:
-            # Multiline comment
-            start_line = comment_list[range[0]].line_number()
-            comment_fragments = [comment_list[i].text() for i in range]           
-            comment = ''.join(comment_fragments)
-            comments.append(Comment(comment, start_line, True))
-    
-    return comments
+    comment_list.sort(key=__line_number_sort) 
+    return comment_list
 
 def __is_shebang(comment):
-    return comment.line_number() == 1 and comment.text()[0] == "!"
+    return comment.line_number() == 1 and comment.text().startswith('!')
 
 def __is_encoding(comment):
     txt = comment.text()
