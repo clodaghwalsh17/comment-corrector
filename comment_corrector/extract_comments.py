@@ -33,7 +33,7 @@ def __find_python_documentation_comments(file):
     for iter in re.finditer(end, code):
         line.append(iter.end())
 
-    pattern = "\"{3}[ \t\n\r]*([<>%!@#'._,;:a-zA-Z0-9\+-/\*=\(\)\[\]\n ]+)\"{3}"
+    pattern = "\"{3}[ \t\n\r]*([<>%!@#%^&?/¬~|\\\\`'\"._,;:a-zA-Z0-9\+-/\*=\(\)\[\]\{\}\n ]+)\"{3}" 
     match = re.compile(pattern)
     for iter in re.finditer(match, code):
         string = iter.group(1)
