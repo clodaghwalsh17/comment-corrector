@@ -10,11 +10,8 @@ def list_comments(file, mime):
     try:
         comments = [Comment.from_comment_parser(comment) for comment in comment_parser.extract_comments(file, mime)]
         
-        if mime == "text/x-python":               
-            comments = __group_python_multiline_comments(file, comments)
-            
-            # Comment Corrector doesn't track shebang or encoding
-            comments = [comment for comment in comments if not __is_shebang(comment) and not __is_encoding(comment)]
+        if mime == "text/x-python":                         
+            comments = __process_python_comments(file, comments)
             
             doc_comments = __find_python_documentation_comments(file)
             if doc_comments:
@@ -51,7 +48,8 @@ def __find_python_documentation_comments(file):
   
     return doc_comments
 
-def __group_python_multiline_comments(file, comment_list):
+def __process_python_comments(file, comment_list):
+    # Group multiline comments and remove any untrackable items including shebang and encoding
     start_line = 0
     end_line = 0
     line_number = 0
@@ -63,13 +61,13 @@ def __group_python_multiline_comments(file, comment_list):
             line_number += 1
 
             if not line:
-                break          
-            
-            if comment and line.strip().startswith('#'):
+                break  
+      
+            if comment and __is_trackable_comment(line, line_number):
                 comment += line.strip()[1:]
                 end_line += 1
                 comment_list = [comment for comment in comment_list if comment.text() != line.strip()[1:]]
-            elif line.strip().startswith('#'):
+            elif __is_trackable_comment(line, line_number):
                 start_line = line_number
                 end_line = line_number
                 comment += line.strip()[1:]
@@ -80,18 +78,23 @@ def __group_python_multiline_comments(file, comment_list):
             elif comment:
                 comment_list.append(Comment(comment, start_line, False))
                 comment = ''
+            else:
+                comment_list = [comment for comment in comment_list if comment.text() != line.strip()[1:]]
     
     comment_list.sort(key=__line_number_sort) 
     return comment_list
 
-def __is_shebang(comment):
-    return comment.line_number() == 1 and comment.text().startswith('!')
+def __is_trackable_comment(string, line_number):
+    # Comment Corrector doesn't track shebang or encoding
+    return string.strip().startswith('#') and not __is_shebang(string, line_number) and not __is_encoding(string, line_number)
 
-def __is_encoding(comment):
-    txt = comment.text()
+def __is_shebang(string, line_number):
+    return line_number == 1 and string.startswith('#!')
+
+def __is_encoding(string, line_number):
     regex = "coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
-    result = re.search(regex, txt)
-    return comment.line_number() <= 2 and result is not None
+    result = re.search(regex, string)
+    return line_number <= 2 and result is not None
 
 def __line_number_sort(comment):
     return comment.line_number()
