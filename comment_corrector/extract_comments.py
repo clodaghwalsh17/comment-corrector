@@ -33,7 +33,7 @@ def __find_python_documentation_comments(file):
     for iter in re.finditer(end, code):
         line.append(iter.end())
 
-    pattern = "\"{3}[ \t\n\r]*([<>%!@#%^&?/¬~|\\\\`'\"._,;:a-zA-Z0-9\+-/\*=\(\)\[\]\{\}\n ]+)\"{3}" 
+    pattern = "\"{3}[ \t\n\r]*([<>%!@#%^&?/¬~|\\\\`'._,;:a-zA-Z0-9\+-/\*=\(\)\[\]\{\}\n ]+)\"{3}" 
     match = re.compile(pattern)
     for iter in re.finditer(match, code):
         string = iter.group(1)
@@ -64,14 +64,14 @@ def __process_python_comments(file, comment_list):
                 break  
       
             if comment and __is_trackable_comment(line, line_number):
-                comment += line.strip()[1:]
+                comment = comment + " " + line[1:].strip()
                 end_line += 1
-                comment_list = [comment for comment in comment_list if comment.text() != line.strip()[1:]]
+                comment_list = __remove_unwanted_comment(comment_list, line)
             elif __is_trackable_comment(line, line_number):
                 start_line = line_number
                 end_line = line_number
                 comment += line.strip()[1:]
-                comment_list = [comment for comment in comment_list if comment.text() != line.strip()[1:]]
+                comment_list = __remove_unwanted_comment(comment_list, line)
             elif comment and start_line != end_line:
                 comment_list.append(Comment(comment, start_line, True))
                 comment = ''
@@ -79,7 +79,7 @@ def __process_python_comments(file, comment_list):
                 comment_list.append(Comment(comment, start_line, False))
                 comment = ''
             else:
-                comment_list = [comment for comment in comment_list if comment.text() != line.strip()[1:]]
+                comment_list = __remove_unwanted_comment(comment_list, line)
     
     comment_list.sort(key=__line_number_sort) 
     return comment_list
@@ -98,3 +98,7 @@ def __is_encoding(string, line_number):
 
 def __line_number_sort(comment):
     return comment.line_number()
+
+def __remove_unwanted_comment(comment_list, text):
+    comment_list = [comment for comment in comment_list if comment.text() != text.strip()[1:].strip()]
+    return comment_list
