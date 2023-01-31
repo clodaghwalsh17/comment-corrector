@@ -13,17 +13,35 @@ def list_comments(file, mime):
         if mime == "text/x-python":                         
             comments = __process_python_comments(file, comments)
             
-            doc_comments = __find_python_documentation_comments(file)
-            if doc_comments:
-                comments.extend(doc_comments)
-                comments.sort(key=__line_number_sort) 
-            
+            try:
+                doc_comments = __find_python_documentation_comments(file)
+                if doc_comments:
+                    comments.extend(doc_comments)
+                    comments.sort(key=__line_number_sort) 
+            except Exception as e:        
+                print(e)  
+                sys.exit() 
+        
         return comments
     except Exception as e:        
         print(e)  
         sys.exit()  
 
 def __find_python_documentation_comments(file):
+    single_quote_pattern = "'{3}[ \t\n\r]*([<>%!@#%^&?/¬~|\\\\`'._,;:a-zA-Z0-9\+-/\*=\(\)\[\]\{\}\n ]+)'{3}" 
+    double_quote_pattern = "\"{3}[ \t\n\r]*([<>%!@#%^&?/¬~|\\\\`'._,;:a-zA-Z0-9\+-/\*=\(\)\[\]\{\}\n ]+)\"{3}" 
+    
+    single_quote_doc_comments = __match_documentation_comments(file, re.compile(single_quote_pattern))
+    double_quote_doc_comments = __match_documentation_comments(file, re.compile(double_quote_pattern))
+
+    if single_quote_doc_comments and double_quote_doc_comments:
+        raise Exception("Comment Corrector does not support files with inconsistent Python documentation comments. Please review this as it is bad practice.")
+    elif single_quote_doc_comments:
+        return single_quote_doc_comments
+    elif double_quote_doc_comments:
+        return double_quote_doc_comments
+
+def __match_documentation_comments(file, match):
     doc_comments = []
     with open(file) as f:
         code = f.read()
@@ -32,9 +50,6 @@ def __find_python_documentation_comments(file):
     line = []
     for iter in re.finditer(end, code):
         line.append(iter.end())
-
-    pattern = "\"{3}[ \t\n\r]*([<>%!@#%^&?/¬~|\\\\`'._,;:a-zA-Z0-9\+-/\*=\(\)\[\]\{\}\n ]+)\"{3}" 
-    match = re.compile(pattern)
     for iter in re.finditer(match, code):
         string = iter.group(1)
 
