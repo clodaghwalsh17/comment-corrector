@@ -1,3 +1,5 @@
+from comment_corrector.status import Status
+
 class Comment():
 
     def __init__(self, text, line_number, is_multiline, real_length=None, category=""):
@@ -5,6 +7,7 @@ class Comment():
         self.__line_number = line_number
         self.__is_multiline = is_multiline        
         self.__category = category
+        self.__status = Status.UNCHECKED
 
         if real_length:
             self.__real_length = real_length
@@ -26,6 +29,7 @@ class Comment():
     def categorise_comment(self, category):
         self.__category = category
     
+    # TODO Possible comment categories are task, inline task, inline, documentation, copyright, untrackable
     def category(self):
         return self.__category
     
@@ -33,7 +37,7 @@ class Comment():
         self.__status = status
 
     def comment_status(self):
-        return self.__status
+        return self.__status.name
 
     def text(self):
         return self.__text
@@ -48,4 +52,4 @@ class Comment():
         return self.__text
 
     def __repr__(self):
-        return 'Comment(%s, %s, %s, %s)' % (self.__text, self.__line_number, self.__is_multiline, self.__category)  
+        return 'Comment(%s, %s, %s, %s, %s)' % (self.__text, self.__line_number, self.__is_multiline, self.__category, self.__status.name)  
