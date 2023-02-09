@@ -1,5 +1,5 @@
 from comment_corrector.extract_comments import list_comments
-from comment_corrector.semantic_diff import diff
+from comment_corrector.semantic_diff import diff, source_to_tree
 from comment_corrector.utils import Utils
 from comment_corrector.comment_matcher import PythonCommentMatcher
 import argparse
@@ -29,10 +29,17 @@ def run():
       
     if comments_file2:
         comments_file1 = list_comments(args.file_v1, mime_type)
+
         if comments_file1:
             if mime_type == "text/x-python":
-                json = diff(files, utils.get_programming_language(args.file_v1))
-                comment_matcher = PythonCommentMatcher(json, comments_file2) 
-                comment_matcher.match()           
+                edit_script = diff(files)
+                
+                tree = source_to_tree(args.file_v1)
+
+                comment_matcher = PythonCommentMatcher(tree, comments_file1)
+                comment_matcher.match()         
+
+                # TODO analyse remaining comments   
         else:
+            # TODO Analyse comments
             print("New comments added")       
