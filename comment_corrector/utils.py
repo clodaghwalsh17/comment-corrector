@@ -29,12 +29,12 @@ class Utils:
 
     def get_supported_file_extensions(self):
         file_extensions = [mapping['file_extension'] for mapping in self.mapping]
-        return self.flatten_to_list(file_extensions)
+        return self.__flatten_to_list(file_extensions)
     
     def get_mapping(self):
         return self.mapping
 
-    def flatten_to_list(self, struct):
+    def __flatten_to_list(self, struct):
         flatten_operation = lambda *n: (e for a in n for e in (flatten_operation(*a) if isinstance(a, (tuple, list)) else (a,)))
         return list(flatten_operation(struct))
 

@@ -69,6 +69,7 @@ def __process_python_comments(file, comment_list):
     end_line = 0
     line_number = 0
     comment = ''
+    comment_length = 0
 
     with open(file) as f:
         while True:
@@ -77,24 +78,29 @@ def __process_python_comments(file, comment_list):
 
             if not line:
                 break  
-      
+     
             if comment and __is_trackable_comment(line, line_number):
-                comment = comment + " " + line[1:].strip()
                 end_line += 1
+                comment_length += len(line)
+                comment += line.strip()[1:]
                 comment_list = __remove_unwanted_comment(comment_list, line)
             elif __is_trackable_comment(line, line_number):
                 start_line = line_number
                 end_line = line_number
+                comment_length += len(line)
                 comment += line.strip()[1:]
                 comment_list = __remove_unwanted_comment(comment_list, line)
-            elif comment and start_line != end_line:
-                comment_list.append(Comment(comment, start_line, True))
-                comment = ''
-            elif comment:
-                comment_list.append(Comment(comment, start_line, False))
-                comment = ''
-            else:
+            elif __is_untrackable_comment(line, line_number):
                 comment_list = __remove_unwanted_comment(comment_list, line)
+                comment_list.append(Comment(line, line_number, False, real_length=len(line), category="untrackable"))
+            elif comment and start_line != end_line:
+                comment_list.append(Comment(comment, start_line, True, real_length=comment_length))
+                comment = ''
+                comment_length = 0
+            elif comment:
+                comment_list.append(Comment(comment, start_line, False, real_length=comment_length))
+                comment = ''
+                comment_length = 0
     
     comment_list.sort(key=__line_number_sort) 
     return comment_list
@@ -102,6 +108,9 @@ def __process_python_comments(file, comment_list):
 def __is_trackable_comment(string, line_number):
     # Comment Corrector doesn't track shebang or encoding
     return string.strip().startswith('#') and not __is_shebang(string, line_number) and not __is_encoding(string, line_number)
+
+def __is_untrackable_comment(string, line_number):
+    return string.strip().startswith('#') and (__is_shebang(string, line_number) or __is_encoding(string, line_number))
 
 def __is_shebang(string, line_number):
     return line_number == 1 and string.startswith('#!')
