@@ -12,10 +12,10 @@ public class GumTreeAPI {
     public static void main(String[] args) throws IOException {
         if(args.length < 2) {
             System.err.println("Insufficient arguments provided.\n" +
-            "The task to be performed must be specified first. Either of the following tasks are valid: EditScript, JSONTree.\n"+
+            "The task to be performed must be specified first. Either of the following tasks are valid: editscript, jsontree.\n"+
             "In addition the file path to the file(s) to operate on must be supplied.\n" + 
-            "EditScript Example: java -jar target/semanticDiff-1-jar-with-dependencies.jar editscript version1.py version2.py\n" +
-            "JSONTree Example: java -jar target/semanticDiff-1-jar-with-dependencies.jar jsontree file.py\n");
+            "editscript Example: java -jar target/semanticDiff-1-jar-with-dependencies.jar editscript version1.py version2.py\n" +
+            "jsontree Example: java -jar target/semanticDiff-1-jar-with-dependencies.jar jsontree file.py\n");
             System.exit(1);
         }       
 
@@ -44,7 +44,7 @@ public class GumTreeAPI {
             gumTreeTask.printJSONTree(args[1]);
         }
         else {
-            System.err.println("Unable to perform the task specified. Either of the following tasks are valid: EditScript, JSONTree.\n");
+            System.err.println("Unable to perform the task specified. Either of the following tasks are valid: editscript, jsontree.\n");
             System.exit(1);
         }   
        
