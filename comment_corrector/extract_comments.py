@@ -1,5 +1,6 @@
 from comment_parser import comment_parser
 from comment_corrector.comment import Comment
+from comment_corrector.category import Category
 import sys
 import re
 
@@ -59,7 +60,7 @@ def __match_documentation_comments(file, match):
         
         if is_doc_comment:
             line_number = next(i for i in range(len(line)) if line[i] > iter.start(1))
-            doc_comments.append(Comment(string, line_number, True, category="documentation"))            
+            doc_comments.append(Comment(string, line_number, True, category=Category.DOCUMENTATION))            
   
     return doc_comments
 
@@ -92,7 +93,7 @@ def __process_python_comments(file, comment_list):
                 comment_list = __remove_unwanted_comment(comment_list, line)
             elif __is_untrackable_comment(line, line_number):
                 comment_list = __remove_unwanted_comment(comment_list, line)
-                comment_list.append(Comment(line, line_number, False, real_length=len(line), category="untrackable"))
+                comment_list.append(Comment(line, line_number, False, real_length=len(line), category=Category.UNTRACKABLE))
             elif comment and start_line != end_line:
                 comment_list.append(Comment(comment, start_line, True, real_length=comment_length))
                 comment = ''

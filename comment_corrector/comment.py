@@ -1,8 +1,9 @@
 from comment_corrector.status import Status
+from comment_corrector.category import Category
 
 class Comment():
 
-    def __init__(self, text, line_number, is_multiline, real_length=None, category=""):
+    def __init__(self, text, line_number, is_multiline, real_length=None, category=None):
         self.__text = text.strip() 
         self.__line_number = line_number
         self.__is_multiline = is_multiline        
@@ -16,7 +17,7 @@ class Comment():
 
     @classmethod
     # Construct an object using the Comment object of comment_parser as a base
-    def from_comment_parser(cls, base_comment, category=""):
+    def from_comment_parser(cls, base_comment, category=None):
         return cls(base_comment.text(), base_comment.line_number(), base_comment.is_multiline(), category)
 
     def length(self):
@@ -29,9 +30,11 @@ class Comment():
     def categorise_comment(self, category):
         self.__category = category
     
-    # TODO Possible comment categories are task, inline task, inline, documentation, copyright, untrackable
     def category(self):
-        return self.__category
+        if self.__category is not None:
+            return self.__category.name
+        else:
+            return ""
     
     def update_status(self, status):
         self.__status = status
@@ -52,4 +55,4 @@ class Comment():
         return self.__text
 
     def __repr__(self):
-        return 'Comment(%s, %s, %s, %s, %s)' % (self.__text, self.__line_number, self.__is_multiline, self.__category, self.__status.name)  
+        return 'Comment(%s, %s, %s, %s, %s)' % (self.__text, self.__line_number, self.__is_multiline, self.__category.name, self.__status.name)  

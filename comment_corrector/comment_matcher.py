@@ -1,4 +1,5 @@
 from comment_corrector.status import Status
+from comment_corrector.category import Category
 import json
 import math
 
@@ -40,11 +41,11 @@ class PythonCommentMatcher():
             while occupied_space + self.__current_comment.real_length() <= int(entity['pos']):
                 if self.__current_comment.category() == "":
                     if self.__is_copyright_comment(self.__current_comment.text()):
-                        self.__current_comment.categorise_comment("copyright")
+                        self.__current_comment.categorise_comment(Category.COPYRIGHT)
                     elif self.__is_task_comment(self.__current_comment.text()):
-                        self.__current_comment.categorise_comment("task")
+                        self.__current_comment.categorise_comment(Category.TASK)
                     else:
-                        self.__current_comment.categorise_comment("intro")
+                        self.__current_comment.categorise_comment(Category.INTRO)
                 
                 print(repr(self.__current_comment))
                 occupied_space += self.__current_comment.real_length()
@@ -54,7 +55,7 @@ class PythonCommentMatcher():
             if self.__has_inline_comment(entity):
                 self.__tag_inline_comment()
             else:
-                self.__current_comment.categorise_comment("root")
+                self.__current_comment.categorise_comment(Category.ROOT)
                 print(repr(self.__comments[self.__comment_index]))
                 self.__next_comment()
 
@@ -76,10 +77,10 @@ class PythonCommentMatcher():
     def __match_comment(self, entity1, entity2):
         if self.__suitable_comment_gap(entity1, entity2):
             if self.__is_task_comment(self.__current_comment.text()):
-                self.__current_comment.categorise_comment("task")
+                self.__current_comment.categorise_comment(Category.TASK)
             else:
                 # TODO call determine category function
-                self.__current_comment.categorise_comment("regular")
+                self.__current_comment.categorise_comment(Category.OTHER)
                 
             print(repr(self.__current_comment))
             self.__next_comment()
@@ -89,9 +90,9 @@ class PythonCommentMatcher():
   
     def __tag_inline_comment(self):
         if self.__is_task_comment(self.__current_comment.text()):
-            self.__current_comment.categorise_comment("inline task")
+            self.__current_comment.categorise_comment(Category.INLINE_TASK)
         else: 
-            self.__current_comment.categorise_comment("inline")
+            self.__current_comment.categorise_comment(Category.INLINE)
         print(repr(self.__current_comment))
         self.__next_comment()
     
