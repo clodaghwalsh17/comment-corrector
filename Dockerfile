@@ -1,7 +1,7 @@
 FROM ubuntu:jammy
 
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends git build-essential ocaml libnum-ocaml-dev python3-pip python3-dev default-jdk
+RUN apt-get update && apt-get install -y --no-install-recommends \
+git build-essential ocaml libnum-ocaml-dev python3-pip python3-dev default-jdk python3-enchant
 
 RUN git clone https://github.com/GumTreeDiff/pythonparser.git /opt/pythonparser --depth 1 --jobs 4\
     && ln -s /opt/pythonparser/pythonparser /usr/bin/pythonparser \

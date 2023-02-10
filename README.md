@@ -28,6 +28,8 @@ All Python dependencies can be found in the `requirements.txt` file. Issuing the
 pip3 install -r requirements.txt
 ```
 
+To operate effectively the `pyenchant` package relies on the `Enchant C` library. Follow the instructions in the [documentation](http://pyenchant.github.io/pyenchant/install.html) to download the library for your system.
+
 #### GumTree Dependencies
 
 GumTree is a code differencing tool written in Java. The [GumTreeDiff](https://github.com/GumTreeDiff) project develops the parsers that [GumTree](https://github.com/GumTreeDiff/gumtree) relies on.  
