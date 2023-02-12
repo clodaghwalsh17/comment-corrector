@@ -78,6 +78,11 @@ def __process_python_comments(file, comment_list):
             line_number += 1
 
             if not line:
+                # Catch any comments at the end of the file
+                if comment and start_line != end_line:
+                    comment_list.append(Comment(comment, start_line, True, real_length=comment_length))
+                elif comment:
+                    comment_list.append(Comment(comment, start_line, False, real_length=comment_length))
                 break  
      
             if comment and __is_trackable_comment(line, line_number):
