@@ -1,6 +1,3 @@
-from comment_corrector.status import Status
-from comment_corrector.category import Category
-
 class Comment():
 
     def __init__(self, text, line_number, is_multiline, real_length=None, category=None):
@@ -8,7 +5,6 @@ class Comment():
         self.__line_number = line_number
         self.__is_multiline = is_multiline        
         self.__category = category
-        self.__status = Status.UNCHECKED
 
         if real_length:
             self.__real_length = real_length
@@ -27,23 +23,21 @@ class Comment():
     def real_length(self):
         return self.__real_length
     
+    # Comments are categorised using the enum Category
     def categorise_comment(self, category):
         self.__category = category
     
     def category(self):
         if self.__category is not None:
-            return self.__category.name
+            return self.__category
         else:
             return ""
-    
-    def update_status(self, status):
-        self.__status = status
-
-    def comment_status(self):
-        return self.__status.name
 
     def text(self):
         return self.__text
+
+    def update_text(self, text):
+        self.__text = text
     
     def line_number(self):
         return self.__line_number
@@ -55,4 +49,4 @@ class Comment():
         return self.__text
 
     def __repr__(self):
-        return 'Comment(%s, %s, %s, %s, %s)' % (self.__text, self.__line_number, self.__is_multiline, self.__category.name, self.__status.name)  
+        return 'Comment(%s, %s, %s, %s)' % (self.__text, self.__line_number, self.__is_multiline, self.category())  
