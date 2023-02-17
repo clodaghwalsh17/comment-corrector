@@ -11,7 +11,7 @@ import re
 import json
 
 class CommentAnalyser(ABC):
-    COPYRIGHT_IDENTIFIERS = ["license", "licence", "copyright", "distributed", "warranty"] # Q even need anymore
+    COPYRIGHT_IDENTIFIERS = ["license", "licence", "copyright", "distributed", "warranty"]
     TASK_IDENTIFIERS = ["TODO", "FIXME", "FIX", "BUG", "HACK"]
     SYMBOLS_REGEX = "[\(\)\{\}\[\],.:\"'~^&|!><%\+-/\*]"
     ASSIGNMENT_REGEX = "="
@@ -64,17 +64,22 @@ class CommentAnalyser(ABC):
             self._current_comment = self._comments[self._comment_index]
 
     def _is_task_comment(self, comment_text):
-        task_comment = False
         for keyword in self.TASK_IDENTIFIERS:
-            task_comment = task_comment or keyword in comment_text
-        return task_comment
+            result = self._match_whole_word(keyword)(comment_text)
+            if result is not None:
+                return True
+        return False
     
     def _is_copyright_comment(self, comment_text):
-        copyright_comment = False
         for keyword in self.COPYRIGHT_IDENTIFIERS:
-            copyright_comment = copyright_comment or keyword in comment_text or keyword.capitalize() in comment_text
-        return copyright_comment
+            result = self._match_whole_word(keyword)(comment_text)
+            if result is not None:
+                return True
+        return False
     
+    def _match_whole_word(self, word):
+        return re.compile(r'\b({})\b'.format(word), flags=re.IGNORECASE).search
+
     def _is_commented_code(self, comment_text):
         if self._terminator and re.search(self._terminator, comment_text) is not None:
             return True
@@ -84,7 +89,8 @@ class CommentAnalyser(ABC):
             return True
         
         for word in self._code_words:
-            if word in comment_text:
+            result = self._match_whole_word(word)(comment_text)
+            if result is not None:
                 return True
         
         return False
@@ -92,14 +98,10 @@ class CommentAnalyser(ABC):
     def _check_spelling(self, comment_text):
         return self._spell_checker.check_spelling(comment_text)
 
-    # add to analyse comment but only if 2 file version
-    # have as strategy
-    def _is_outdated(self, comment): # could be outdated and other errors
+    def _is_outdated(self, comment):
         pass
     
     def _full_analysis(self):
-        # passed 2 entities??
-        # outdated and cosmetic called
         print("Do full analysis")
 
     def _cosmetic_analysis(self): 
