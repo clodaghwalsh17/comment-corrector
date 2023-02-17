@@ -3,17 +3,23 @@
         {
             "language" : "Java",
             "file_extension" : ".java",
-            "mime_type" : "text/x-java-source"
+            "mime_type" : "text/x-java-source",
+            "terminator" : ";"
         },
         {
             "language" : "Python",
             "file_extension" : ".py",
-            "mime_type" : "text/x-python"
+            "mime_type" : "text/x-python",
+            "code_words" : ["and", "as", "assert", "async", "await", "b\"", "bool", "break", "bytearray", "bytes", "class", "complex", 
+            "continue", "def", "del", "dict", "elif", "else", "except", "False", "finally", "float", "for", "from", "frozenset",  
+            "global", "if", "import", "in", "int", "is", "lambda", "list", "memoryview", "nonlocal", "None", "not", "or", "pass", 
+            "print", "raise", "range", "return", "self", "set", "str", "True", "try", "tuple", "while", "with", "yield"]
         },
         {
             "language" : "C",
             "file_extension" : [".c", ".h"],
-            "mime_type" : "text/x-c"
+            "mime_type" : "text/x-c",
+            "terminator" : ";"
         }      
     ]
 }
