@@ -1,5 +1,5 @@
 from comment_corrector.semantic_diff import source_to_tree
-from comment_corrector.extract_comments import list_comments
+from comment_corrector.comment_extractor import CommentExtractor
 from comment_corrector.spellchecker import SpellChecker
 from comment_corrector.reviewable_comment import ReviewableComment
 from comment_corrector.category import Category
@@ -11,7 +11,7 @@ import re
 import json
 
 class CommentAnalyser(ABC):
-    COPYRIGHT_IDENTIFIERS = ["license", "licence", "copyright", "distributed", "warranty"] 
+    COPYRIGHT_IDENTIFIERS = ["license", "licence", "copyright", "distributed", "warranty"] # Q even need anymore
     TASK_IDENTIFIERS = ["TODO", "FIXME", "FIX", "BUG", "HACK"]
     SYMBOLS_REGEX = "[\(\)\{\}\[\],.:\"'~^&|!><%\+-/\*]"
     ASSIGNMENT_REGEX = "="
@@ -43,12 +43,15 @@ class CommentAnalyser(ABC):
         self._tree = tree['root'] 
 
     def _set_analysis_strategy(self):
-        mime_type = Utils.get_mime_type(self._files[0])
-        comments_file1 = list_comments(self._files[0], mime_type) 
-        comments_file2 = list_comments(self._files[1], mime_type) 
+        extractor = CommentExtractor(Utils.get_mime_type(self._files[0]))
+        comments_file1 = extractor.extract_comments(self._files[0])
+        comments_file2 = extractor.extract_comments(self._files[1])
         if comments_file1 and comments_file2:
             self._analysis_strategy = self._full_analysis
-            self._set_tree() 
+            self._comments = [] # FINISH combine comments maybe??
+            # self._comment_index = 0
+            # self._current_comment = self._comments[self._comment_index]
+            self._set_tree() # Q do need 2 trees
         elif comments_file2:
             self._analysis_strategy = self._cosmetic_analysis
             self._comments = comments_file2
@@ -89,10 +92,14 @@ class CommentAnalyser(ABC):
     def _check_spelling(self, comment_text):
         return self._spell_checker.check_spelling(comment_text)
 
-    def _is_outdated(self, comment): 
+    # add to analyse comment but only if 2 file version
+    # have as strategy
+    def _is_outdated(self, comment): # could be outdated and other errors
         pass
     
     def _full_analysis(self):
+        # passed 2 entities??
+        # outdated and cosmetic called
         print("Do full analysis")
 
     def _cosmetic_analysis(self): 

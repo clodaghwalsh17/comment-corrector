@@ -21,9 +21,9 @@ def run():
     except Exception as e:
         print(e)  
         sys.exit()
-             
-    mime_type = Utils.get_mime_type(args.file_v1)
-    if mime_type == "text/x-python":
+
+    language = Utils.get_programming_language(args.file_v1)
+    if language == "Python":
         analyser = PythonCommentAnalyser(files)
     
     if args.language and args.words:
