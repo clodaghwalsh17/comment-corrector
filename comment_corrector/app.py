@@ -1,4 +1,3 @@
-from comment_corrector.semantic_diff import diff, source_to_tree
 from comment_corrector.utils import Utils
 from comment_corrector.python_comment_analyser import PythonCommentAnalyser
 import argparse
@@ -16,18 +15,16 @@ def init_argparse():
 def run():     
     args = init_argparse()
     files = (args.file_v1, args.file_v2)   
-   
-    utils = Utils()
+
     try:
-        utils.validate_files(files)
+        Utils.validate_files(files)
     except Exception as e:
         print(e)  
         sys.exit()
-   
-    mime_type = utils.get_mime_type(args.file_v1)
+             
+    mime_type = Utils.get_mime_type(args.file_v1)
     if mime_type == "text/x-python":
-        tree = source_to_tree(args.file_v1)
-        analyser = PythonCommentAnalyser(files, tree)
+        analyser = PythonCommentAnalyser(files)
     
     if args.language and args.words:
         analyser.set_spellchecker_settings(args.language, args.words)

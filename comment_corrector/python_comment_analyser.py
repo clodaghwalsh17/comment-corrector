@@ -1,6 +1,6 @@
 from comment_corrector.comment_analyser import CommentAnalyser
 from comment_corrector.category import Category
-import json
+from comment_corrector.utils import Utils
 import math
 
 PYTHON_LABELS = {
@@ -11,15 +11,8 @@ PYTHON_LABELS = {
 
 class PythonCommentAnalyser(CommentAnalyser):
 
-    def __init__(self, files, json_str_tree):
-        super().__init__(files)
-        self._set_analysis_strategy("text/x-python")                
-        tree = json.loads(json_str_tree)   
-        # self.__tree is a dictionary with the keys type, pos, length, children      
-        self.__tree = tree['root']        
-    
-    def _is_commented_code(self, comment_text):
-        print("Checking for commented code") # TODO
+    def __init__(self, files):   
+        super().__init__(files, Utils.get_code_words("Python"), Utils.get_terminator("Python"))               
 
     def __match(self, entity):
         if not entity:
