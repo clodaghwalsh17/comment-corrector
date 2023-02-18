@@ -10,10 +10,9 @@
             "language" : "Python",
             "file_extension" : ".py",
             "mime_type" : "text/x-python",
-            "code_words" : ["and", "as", "assert", "async", "await", "b\"", "bool", "break", "bytearray", "bytes", "class", "complex", 
-            "continue", "def", "del", "dict", "elif", "else", "except", "False", "finally", "float", "for", "from", "frozenset",  
-            "global", "if", "import", "in", "int", "is", "lambda", "list", "memoryview", "nonlocal", "None", "not", "or", "pass", 
-            "print", "raise", "range", "return", "self", "set", "str", "True", "try", "tuple", "while", "with", "yield"]
+            "code_word_regexes" : ["assert", "async", "await", "b\"", "bool", "break", "continue", "def", "del", "elif", "False", 
+            "global", "import", "import [a-z] as", "is None", "is not", "nonlocal", "None", "not in", "pass", "raise", "range", 
+            "return", "self", "str", "True", "with [a-z] as", "yield"]
         },
         {
             "language" : "C",

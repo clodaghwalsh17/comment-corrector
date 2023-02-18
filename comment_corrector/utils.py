@@ -30,9 +30,9 @@ class Utils:
         return map['language']
 
     @staticmethod
-    def get_code_words(language):
+    def get_code_word_regexes(language):
         map = next((mapping for mapping in Utils.data if language in mapping['language']), None)
-        return map['code_words']
+        return map['code_word_regexes']
     
     @staticmethod
     def get_terminator(language):

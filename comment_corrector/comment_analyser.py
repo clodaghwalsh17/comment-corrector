@@ -13,12 +13,12 @@ import json
 class CommentAnalyser(ABC):
     COPYRIGHT_IDENTIFIERS = ["license", "licence", "copyright", "distributed", "warranty"]
     TASK_IDENTIFIERS = ["TODO", "FIXME", "FIX", "BUG", "HACK"]
-    SYMBOLS_REGEX = "[\(\)\{\}\[\],.:\"'~^&|!><%\+-/\*]"
+    SYMBOLS_REGEX = "[\(\)\{\}\[\]:\"'~^&|!><%\+-/\*]"
     ASSIGNMENT_REGEX = "="
 
-    def __init__(self, files, code_words, terminator):
+    def __init__(self, files, code_word_regexes, terminator):
         self._files = files
-        self._code_words = code_words
+        self._code_word_regexes = code_word_regexes
         self._terminator = terminator
         self._reviewable_comments = []
         self._spell_checker = SpellChecker()
@@ -65,19 +65,19 @@ class CommentAnalyser(ABC):
 
     def _is_task_comment(self, comment_text):
         for keyword in self.TASK_IDENTIFIERS:
-            result = self._match_whole_word(keyword)(comment_text)
+            result = self._match_phrase(keyword)(comment_text)
             if result is not None:
                 return True
         return False
     
     def _is_copyright_comment(self, comment_text):
         for keyword in self.COPYRIGHT_IDENTIFIERS:
-            result = self._match_whole_word(keyword)(comment_text)
+            result = self._match_phrase(keyword)(comment_text)
             if result is not None:
                 return True
         return False
     
-    def _match_whole_word(self, word):
+    def _match_phrase(self, word):
         return re.compile(r'\b({})\b'.format(word), flags=re.IGNORECASE).search
 
     def _is_commented_code(self, comment_text):
@@ -88,8 +88,11 @@ class CommentAnalyser(ABC):
         if re.search(self.SYMBOLS_REGEX, comment_text) is not None:
             return True
         
-        for word in self._code_words:
-            result = self._match_whole_word(word)(comment_text)
+        # Certain keywords of a language can be omitted from the list of regexes as the previous checks identify the commented out code
+        # This is beneficial as many keywords are often found in a genuine comment eg the words if, else, for, while, in, is
+        # For example the keyword if is always accompanied by a symbol and for this reason is not included in the list
+        for regex in self._code_word_regexes:
+            result = self._match_phrase(regex)(comment_text)
             if result is not None:
                 return True
         

@@ -12,7 +12,7 @@ PYTHON_LABELS = {
 class PythonCommentAnalyser(CommentAnalyser):
 
     def __init__(self, files):   
-        super().__init__(files, Utils.get_code_words("Python"), Utils.get_terminator("Python"))               
+        super().__init__(files, Utils.get_code_word_regexes("Python"), Utils.get_terminator("Python"))               
 
     def __match(self, entity):
         if not entity:
