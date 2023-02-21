@@ -11,8 +11,8 @@
             "file_extension" : ".py",
             "mime_type" : "text/x-python",
             "code_word_regexes" : ["assert", "async", "await", "b\"", "bool", "break", "continue", "def", "del", "elif", "False", 
-            "global", "import", "import [a-z] as", "is None", "is not", "nonlocal", "None", "not in", "pass", "raise", "range", 
-            "return", "self", "str", "True", "with [a-z] as", "yield"]
+            "global", "import", "import [a-zA-Z0-9.-_] as", "is None", "is not", "nonlocal", "None", "not in", "pass", "raise", "range", 
+            "return", "self", "str", "True", "yield"]
         },
         {
             "language" : "C",
