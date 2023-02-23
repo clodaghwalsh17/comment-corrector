@@ -28,10 +28,7 @@ class Comment():
         self.__category = category
     
     def category(self):
-        if self.__category is not None:
-            return self.__category
-        else:
-            return ""
+        return self.__category
 
     def text(self):
         return self.__text
@@ -44,7 +41,15 @@ class Comment():
     
     def is_multiline(self):
         return self.__is_multiline
+
+    def __hash__(self):
+        return hash((self.__text, self.__line_number, self.__is_multiline, self.__category))
     
+    def __eq__(self, other):
+        if not isinstance(other, type(self)): 
+            return NotImplemented
+        return self.__text == other.text() and self.__line_number == other.line_number() and self.__is_multiline == other.is_multiline() and self.__category == other.category()    
+
     def __str__(self):
         return self.__text
 

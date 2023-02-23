@@ -48,10 +48,13 @@ class CommentAnalyser(ABC):
         comments_file2 = extractor.extract_comments(self._files[1])
         if comments_file1 and comments_file2:
             self._analysis_strategy = self._full_analysis
-            self._comments = [] # FINISH combine comments maybe??
-            # self._comment_index = 0
-            # self._current_comment = self._comments[self._comment_index]
-            self._set_tree() # Q do need 2 trees
+            self._comments = comments_file1 
+            self._current_comments = comments_file2
+            comments_set = set(comments_file2)
+            self._new_comments = comments_set.difference(comments_file1)
+            self._comment_index = 0
+            self._current_comment = self._comments[self._comment_index]
+            self._set_tree()
         elif comments_file2:
             self._analysis_strategy = self._cosmetic_analysis
             self._comments = comments_file2
@@ -105,24 +108,29 @@ class CommentAnalyser(ABC):
         pass
     
     def _full_analysis(self):
-        print("Do full analysis")
+        # TODO call is_outdated
+        for comment in self._new_comments:
+            self._cosmetic_check(comment)
+    
+    def _cosmetic_check(self, comment):
+        errors = []
+        description = ""
+        spelling_suggestion = self._check_spelling(comment.text()) # TODO make more readable
+
+        if comment.category() != Category.UNTRACKABLE:
+            if self._is_task_comment(comment.text()):
+                errors.append(CommentError.REMAINING_TASK)            
+            if spelling_suggestion:
+                errors.append(CommentError.SPELLING_ERROR)
+                description = spelling_suggestion
+            if self._is_commented_code(comment.text()):
+                errors.append(CommentError.COMMENTED_CODE)
+            if len(errors) > 0:
+                    self._reviewable_comments.append(ReviewableComment(comment, errors, description=description))
 
     def _cosmetic_analysis(self): 
         for comment in self._comments:
-            errors = []
-            description = ""
-            spelling_suggestion = self._check_spelling(comment.text()) # TODO make more readable
-
-            if comment.category() != Category.UNTRACKABLE:
-                if self._is_task_comment(comment.text()):
-                    errors.append(CommentError.REMAINING_TASK)            
-                if spelling_suggestion:
-                    errors.append(CommentError.SPELLING_ERROR)
-                    description = spelling_suggestion
-                if self._is_commented_code(comment.text()):
-                    errors.append(CommentError.COMMENTED_CODE)
-                if len(errors) > 0:
-                    self._reviewable_comments.append(ReviewableComment(comment, errors, description=description))
+            self._cosmetic_check(comment)
 
     def _no_analysis(self):
         # Exiting as no comments to review

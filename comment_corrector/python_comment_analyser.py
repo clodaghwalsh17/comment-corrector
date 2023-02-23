@@ -28,7 +28,7 @@ class PythonCommentAnalyser(CommentAnalyser):
             # These may include combinations of shebang, encoding, documentation comment, copyright comment, header comment or task comment
             occupied_space = 0 
             while occupied_space + self._current_comment.real_length() <= int(entity['pos']):
-                if self._current_comment.category() == "":
+                if self._current_comment.category() is None:
                     if self._is_copyright_comment(self._current_comment.text()):
                         self._current_comment.categorise_comment(Category.COPYRIGHT)
                     elif self._is_task_comment(self._current_comment.text()):
@@ -73,8 +73,7 @@ class PythonCommentAnalyser(CommentAnalyser):
                 
             print(repr(self._current_comment))
             self._next_comment()
-
-        if self.__has_inline_comment(entity1):
+        elif self.__has_inline_comment(entity1):
             self.__tag_inline_comment() 
 
     def __tag_inline_comment(self):
