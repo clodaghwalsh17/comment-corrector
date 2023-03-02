@@ -42,13 +42,14 @@ class Comment():
     def is_multiline(self):
         return self.__is_multiline
 
+    # Both __hash__ and __eq__ only examine the text property since the line number of a comment may change between versions of a file 
     def __hash__(self):
-        return hash((self.__text, self.__line_number, self.__is_multiline, self.__category))
+        return hash((self.__text))
     
     def __eq__(self, other):
         if not isinstance(other, type(self)): 
             return NotImplemented
-        return self.__text == other.text() and self.__line_number == other.line_number() and self.__is_multiline == other.is_multiline() and self.__category == other.category()    
+        return self.__text == other.text()
 
     def __str__(self):
         return self.__text

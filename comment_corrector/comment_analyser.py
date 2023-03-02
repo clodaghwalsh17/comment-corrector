@@ -5,7 +5,7 @@ from comment_corrector.reviewable_comment import ReviewableComment
 from comment_corrector.category import Category
 from comment_corrector.comment_error import CommentError
 from comment_corrector.utils import Utils
-from abc import ABC
+from abc import ABC, abstractclassmethod
 import sys
 import re
 import json
@@ -46,16 +46,17 @@ class CommentAnalyser(ABC):
         extractor = CommentExtractor(Utils.get_mime_type(self._files[0]))
         comments_file1 = extractor.extract_comments(self._files[0])
         comments_file2 = extractor.extract_comments(self._files[1])
+        
         if comments_file1 and comments_file2:
             self._analysis_strategy = self._full_analysis
             self._comments = comments_file1 
-            self._comments_file2 = comments_file2
+            self._comments_file2 = [comment.text() for comment in comments_file2]
             comments_set = set(comments_file2)
             self._new_comments = comments_set.difference(comments_file1)
             self._comment_index = 0
             self._current_comment = self._comments[self._comment_index]
             self._set_tree()
-            self._edit_script = diff(self._files)
+            self._edit_script_actions = diff(self._files)
         elif comments_file2:
             self._analysis_strategy = self._cosmetic_analysis
             self._comments = comments_file2
@@ -105,11 +106,34 @@ class CommentAnalyser(ABC):
     def _check_spelling(self, comment_text):
         return self._spell_checker.check_spelling(comment_text)
 
-    def _is_outdated(self, comment):
-        pass
+    def _check_comment(self):
+        print("Checking comment")
+        print(repr(self._current_comment))
+        self._cosmetic_check(self._current_comment)
+        self._next_comment()
+
+    def _check_relevance(self, file_position):
+        if self._current_comment.text() in self._comments_file2:
+            cosmetic_errors = self._cosmetic_check(self._current_comment)
+            if CommentError.COMMENTED_CODE not in cosmetic_errors:
+                for action in self._edit_script_actions:
+                    if action.start_position() >= file_position or  action.end_position() <= file_position:
+                        if len(cosmetic_errors) > 0:
+                            self._reviewable_comments[-1].add_error(CommentError.OUTDATED_COMMENT)
+                        else:
+                            self._reviewable_comments.append(ReviewableComment(self._current_comment, errors=[CommentError.OUTDATED_COMMENT]))
+                        break
+      
+        print(file_position)
+        print(repr(self._current_comment))
+        self._next_comment()
     
+    @abstractclassmethod
+    def _outdated_analysis(self, tree):
+        pass
+
     def _full_analysis(self):
-        # TODO call is_outdated
+        self._outdated_analysis(self._tree)
         for comment in self._new_comments:
             self._cosmetic_check(comment)
     
@@ -128,6 +152,8 @@ class CommentAnalyser(ABC):
                 errors.append(CommentError.COMMENTED_CODE)
             if len(errors) > 0:
                     self._reviewable_comments.append(ReviewableComment(comment, errors, description=description))
+        
+        return errors
 
     def _cosmetic_analysis(self): 
         for comment in self._comments:
