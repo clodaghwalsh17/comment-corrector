@@ -1,4 +1,4 @@
-from comment_corrector.semantic_diff import source_to_tree
+from comment_corrector.semantic_diff import *
 from comment_corrector.comment_extractor import CommentExtractor
 from comment_corrector.spellchecker import SpellChecker
 from comment_corrector.reviewable_comment import ReviewableComment
@@ -13,7 +13,7 @@ import json
 class CommentAnalyser(ABC):
     COPYRIGHT_IDENTIFIERS = ["license", "licence", "copyright", "distributed", "warranty"]
     TASK_IDENTIFIERS = ["TODO", "FIXME", "FIX", "BUG", "HACK"]
-    SYMBOLS_REGEX = "[\(\)\{\}\[\]:\"'~^&|!><%\+-/\*]"
+    SYMBOLS_REGEX = "[\(\)\{\}\[\]:\"'~^&|!><\+-/\*]"
     ASSIGNMENT_REGEX = "="
 
     def __init__(self, files, code_word_regexes, terminator):
@@ -49,12 +49,13 @@ class CommentAnalyser(ABC):
         if comments_file1 and comments_file2:
             self._analysis_strategy = self._full_analysis
             self._comments = comments_file1 
-            self._current_comments = comments_file2
+            self._comments_file2 = comments_file2
             comments_set = set(comments_file2)
             self._new_comments = comments_set.difference(comments_file1)
             self._comment_index = 0
             self._current_comment = self._comments[self._comment_index]
             self._set_tree()
+            self._edit_script = diff(self._files)
         elif comments_file2:
             self._analysis_strategy = self._cosmetic_analysis
             self._comments = comments_file2
