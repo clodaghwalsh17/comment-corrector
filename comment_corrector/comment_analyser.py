@@ -90,7 +90,16 @@ class CommentAnalyser(ABC):
             return True
         if re.search(self.ASSIGNMENT_REGEX, comment_text) is not None:
             return True
-        if re.search(self.SYMBOLS_REGEX, comment_text) is not None:
+        
+        symbol_search_result = re.search(self.SYMBOLS_REGEX, comment_text)
+        if symbol_search_result is not None:
+            # Allow web links of the form http://www.example.com
+            if symbol_search_result.group(0) == ":":
+                weblink_substring = "://www."
+                index = symbol_search_result.span()[1]
+                context = comment_text[index:index+len(weblink_substring)-1]
+                return context == weblink_substring
+
             return True
         
         # Certain keywords of a language can be omitted from the list of regexes as the previous checks identify the commented out code
