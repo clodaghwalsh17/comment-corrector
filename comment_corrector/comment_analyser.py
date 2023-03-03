@@ -116,9 +116,10 @@ class CommentAnalyser(ABC):
         return self._spell_checker.check_spelling(comment_text)
 
     def _check_comment(self):
-        print("Checking comment")
+        if self._current_comment.text() in self._comments_file2:
+            self._cosmetic_check(self._current_comment)
+        
         print(repr(self._current_comment))
-        self._cosmetic_check(self._current_comment)
         self._next_comment()
 
     def _check_relevance(self, file_position):
@@ -157,7 +158,7 @@ class CommentAnalyser(ABC):
             if spelling_suggestion:
                 errors.append(CommentError.SPELLING_ERROR)
                 description = spelling_suggestion
-            if self._is_commented_code(comment.text()):
+            if self._is_commented_code(comment.text()) and comment.category() != Category.DOCUMENTATION:
                 errors.append(CommentError.COMMENTED_CODE)
             if len(errors) > 0:
                     self._reviewable_comments.append(ReviewableComment(comment, errors, description=description))
