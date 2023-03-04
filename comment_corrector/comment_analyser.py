@@ -37,6 +37,10 @@ class CommentAnalyser(ABC):
         self._analysis_strategy()
         self._reviewable_comments.sort(key=Utils.sort_comments)
         return self._reviewable_comments
+    
+    @abstractclassmethod
+    def _outdated_analysis(self, tree):
+        pass
 
     def _set_tree(self):
         tree = json.loads(source_to_tree(self._files[0]))   
@@ -119,29 +123,26 @@ class CommentAnalyser(ABC):
     def _check_comment(self):
         if self._current_comment.text() in self._comments_file2:
             self._cosmetic_check(self._current_comment)
-        
-        print(repr(self._current_comment))
+
         self._next_comment()
 
-    def _check_relevance(self, file_position):
+    def _check_relevance(self, file_position, length):
+        reference_point = file_position + length
         if self._current_comment.text() in self._comments_file2:
             cosmetic_errors = self._cosmetic_check(self._current_comment)
             if CommentError.COMMENTED_CODE not in cosmetic_errors:
                 for action in self._edit_script_actions:
-                    if action.start_position() >= file_position or  action.end_position() <= file_position:
-                        if len(cosmetic_errors) > 0:
-                            self._reviewable_comments[-1].add_error(CommentError.OUTDATED_COMMENT)
-                        else:
-                            self._reviewable_comments.append(ReviewableComment(self._current_comment, errors=[CommentError.OUTDATED_COMMENT]))
-                        break
+                    # TODO deal with other node types
+                    if action.type() == "update-node" and action.start_position() <= reference_point and action.end_position() <= reference_point:
+                        self._register_outdated_comment(cosmetic_errors)
       
-        print(file_position)
-        print(repr(self._current_comment))
-        self._next_comment()
-    
-    @abstractclassmethod
-    def _outdated_analysis(self, tree):
-        pass
+        self._next_comment()    
+
+    def _register_outdated_comment(self, cosmetic_errors):
+        if len(cosmetic_errors) > 0:
+            self._reviewable_comments[-1].add_error(CommentError.OUTDATED_COMMENT)
+        else:
+            self._reviewable_comments.append(ReviewableComment(self._current_comment, errors=[CommentError.OUTDATED_COMMENT]))
 
     def _full_analysis(self):
         self._outdated_analysis(self._tree)
