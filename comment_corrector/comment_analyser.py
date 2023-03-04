@@ -35,6 +35,7 @@ class CommentAnalyser(ABC):
 
     def analyse_comments(self):
         self._analysis_strategy()
+        self._reviewable_comments.sort(key=Utils.sort_comments)
         return self._reviewable_comments
 
     def _set_tree(self):
@@ -153,15 +154,18 @@ class CommentAnalyser(ABC):
         spelling_suggestion = self._check_spelling(comment.text()) # TODO make more readable
 
         if comment.category() != Category.UNTRACKABLE:
+            if self._is_commented_code(comment.text()) and comment.category() != Category.DOCUMENTATION:
+                errors.append(CommentError.COMMENTED_CODE)
+                self._reviewable_comments.append(ReviewableComment(comment, errors))
+                return errors
+            
             if self._is_task_comment(comment.text()):
                 errors.append(CommentError.REMAINING_TASK)            
             if spelling_suggestion:
                 errors.append(CommentError.SPELLING_ERROR)
                 description = spelling_suggestion
-            if self._is_commented_code(comment.text()) and comment.category() != Category.DOCUMENTATION:
-                errors.append(CommentError.COMMENTED_CODE)
             if len(errors) > 0:
-                    self._reviewable_comments.append(ReviewableComment(comment, errors, description=description))
+                self._reviewable_comments.append(ReviewableComment(comment, errors, description=description))
         
         return errors
 

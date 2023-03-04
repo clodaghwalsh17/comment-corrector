@@ -1,6 +1,7 @@
 from comment_parser import comment_parser
 from comment_corrector.comment import Comment
 from comment_corrector.category import Category
+from comment_corrector.utils import Utils
 import sys
 import re
 
@@ -23,7 +24,7 @@ class CommentExtractor():
                     doc_comments = self.__find_python_documentation_comments(file)
                     if doc_comments:
                         comments.extend(doc_comments)
-                        comments.sort(key=self.__line_number_sort) 
+                        comments.sort(key=Utils.sort_comments) 
                 except Exception as e:        
                     print(e)  
                     sys.exit() 
@@ -113,7 +114,7 @@ class CommentExtractor():
                     comment = ''
                     comment_length = 0
         
-        comment_list.sort(key=self.__line_number_sort) 
+        comment_list.sort(key=Utils.sort_comments) 
         return comment_list
 
     def __is_trackable_comment(self, string, line_number):
@@ -130,9 +131,6 @@ class CommentExtractor():
         regex = "coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
         result = re.search(regex, string)
         return line_number <= 2 and result is not None
-
-    def __line_number_sort(self, comment):
-        return comment.line_number()
 
     def __remove_unwanted_comment(self, comment_list, text):
         comment_list = [comment for comment in comment_list if comment.text() != text.strip()[1:].strip()]

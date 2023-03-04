@@ -59,3 +59,7 @@ class Utils:
             return
         else:
             raise Exception("Error with input files.\nInput files supplied are either written in an unsupported language or the files are not written in the same language.") 
+        
+    @staticmethod
+    def sort_comments(comment):
+        return comment.line_number()
