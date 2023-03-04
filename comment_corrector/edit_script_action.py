@@ -1,6 +1,6 @@
 class EditScriptAction:
 
-    def __init__(self, type, start_position, end_position, destination):
+    def __init__(self, type, start_position, end_position, destination=-1):
         self.__type = type
         self.__start_position = start_position
         self.__end_position = end_position

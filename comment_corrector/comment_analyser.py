@@ -132,8 +132,15 @@ class CommentAnalyser(ABC):
             cosmetic_errors = self._cosmetic_check(self._current_comment)
             if CommentError.COMMENTED_CODE not in cosmetic_errors:
                 for action in self._edit_script_actions:
-                    # TODO deal with other node types
                     if action.type() == "update-node" and action.start_position() <= reference_point and action.end_position() <= reference_point:
+                        self._register_outdated_comment(cosmetic_errors)
+                    elif action.type() == "insert-node" and file_position == action.destination():
+                        self._register_outdated_comment(cosmetic_errors)
+                    elif action.type() == "move-tree" and action.start_position() <= file_position and file_position <= action.end_position():
+                        self._register_outdated_comment(cosmetic_errors)
+                    elif action.type() == "move-tree" and file_position == action.destination():
+                        self._register_outdated_comment(cosmetic_errors)
+                    elif action.type() == "delete-tree" and action.start_position() <= file_position and file_position <= action.end_position():
                         self._register_outdated_comment(cosmetic_errors)
       
         self._next_comment()    
