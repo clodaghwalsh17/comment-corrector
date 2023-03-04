@@ -21,20 +21,21 @@ class PythonCommentAnalyser(CommentAnalyser):
             # Various types of "comments" may appear before the body of the code
             # These may include combinations of shebang, encoding, documentation comment, copyright comment, header comment or task comment
             occupied_space = 0 
-            # Q if copyright not outdated, doc comment could be, any other type could be
             while occupied_space + self._current_comment.real_length() <= int(entity['pos']):
-                # wont actually work exactly how is
-                # if self._is_copyright_comment(self._current_comment.text()):
-                #     self._check_comment()
-                               
                 occupied_space += self._current_comment.real_length()
-                # TODO for some of these do check_relevance else just do check_comment     
-                self._check_comment()
+
+                if self._is_copyright_comment(self._current_comment.text()):
+                    self._check_comment()
+                elif self._current_comment.category() == Category.DOCUMENTATION:
+                    self._check_comment()                    
+                elif self._current_comment.category() == Category.UNTRACKABLE:
+                    self._next_comment()
+                else:
+                    self._check_relevance(int(entity['pos']), int(entity['length']))
         
-        # Q needed anymore
         if self.__comment_at_root(entity, entity_children[0]):
             print("Root found")
-            self._check_relevance(int(entity['pos']))
+            self._check_relevance(int(entity['pos']), int(entity['length']))
 
         i = 0
         while i < len(entity_children) and self._comment_index < len(self._comments):
@@ -52,9 +53,8 @@ class PythonCommentAnalyser(CommentAnalyser):
             i += 1
             
     def __match_comment(self, entity1, entity2):
-        # Q do need to do something diff for inline
         if self.__suitable_comment_gap(entity1, entity2) or self.__has_inline_comment(entity1):
-            self._check_relevance(int(entity1['pos']))
+            self._check_relevance(int(entity1['pos']), int(entity1['length']))
     
     def __suitable_comment_gap(self, current_entity, previous_entity):
         return (int(current_entity['pos']) - (int(previous_entity['pos']) + int(previous_entity['length']))) >= self._current_comment.length() 
