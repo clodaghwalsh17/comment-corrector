@@ -25,6 +25,14 @@ class ReviewableComment():
     def get_errors(self):
         return self.__errors
     
+    def __hash__(self):
+        return hash((self.__text, self.__line_number))
+    
+    def __eq__(self, other):
+        if not isinstance(other, type(self)): 
+            return NotImplemented
+        return self.__text == other.text() and self.__line_number == other.line_number()
+    
     def __str__(self):
         return self.__text
 

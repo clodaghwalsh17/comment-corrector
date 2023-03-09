@@ -78,11 +78,11 @@ def __edit_script_as_actions(edit_script):
         index = action.find('to\n')
         
         if index == -1:
-            destination = -1
+            edit_script_actions.append(EditScriptAction(type, int(file_positions[0]), int(file_positions[1])))
         else:
-            destination = int(re.search("\[*([0-9,]+)\]", action[index:]).group(1).split(",")[0])
-
-        edit_script_actions.append(EditScriptAction(type, int(file_positions[0]), int(file_positions[1]), destination))
+            dst_start = int(re.search("\[*([0-9,]+)\]", action[index:]).group(1).split(",")[0])
+            dst_end = int(re.search("\[*([0-9,]+)\]", action[index:]).group(1).split(",")[1])
+            edit_script_actions.append(EditScriptAction(type, int(file_positions[0]), int(file_positions[1]), dst_start, dst_end))
 
     return edit_script_actions
 

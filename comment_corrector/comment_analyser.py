@@ -20,7 +20,7 @@ class CommentAnalyser(ABC):
         self._files = files
         self._code_word_regexes = code_word_regexes
         self._terminator = terminator
-        self._reviewable_comments = []
+        self._reviewable_comments = set()
         self._spell_checker = SpellChecker()
         self._set_analysis_strategy()
     
@@ -35,6 +35,7 @@ class CommentAnalyser(ABC):
 
     def analyse_comments(self):
         self._analysis_strategy()
+        self._reviewable_comments = list(self._reviewable_comments)
         self._reviewable_comments.sort(key=Utils.sort_comments)
         return self._reviewable_comments
     
@@ -131,25 +132,29 @@ class CommentAnalyser(ABC):
         if self._current_comment.text() in self._comments_file2:
             cosmetic_errors = self._cosmetic_check(self._current_comment)
             if CommentError.COMMENTED_CODE not in cosmetic_errors:
+                # Generally a change is comprised of many actions, meaning the register_outdated_comment function could be called several times.
+                # To ensure that a comment is only marked as outdated once a set is used for the variable reviewable_comments.
                 for action in self._edit_script_actions:
-                    if action.type() == "update-node" and action.start_position() <= reference_point and action.end_position() <= reference_point:
+                    if action.type() == "update-node" and file_position <= action.src_start() and action.src_start() <= reference_point:
                         self._register_outdated_comment(cosmetic_errors)
-                    elif action.type() == "insert-node" and file_position == action.destination():
+                    elif action.type() == "insert-node" and file_position == action.dst_start():
                         self._register_outdated_comment(cosmetic_errors)
-                    elif action.type() == "move-tree" and action.start_position() <= file_position and file_position <= action.end_position():
+                    elif action.type() == "move-tree" and file_position == action.src_start():
+                        self._register_outdated_comment(cosmetic_errors) 
+                    elif action.type() == "move-tree" and file_position == action.dst_start():
                         self._register_outdated_comment(cosmetic_errors)
-                    elif action.type() == "move-tree" and file_position == action.destination():
-                        self._register_outdated_comment(cosmetic_errors)
-                    elif action.type() == "delete-tree" and action.start_position() <= file_position and file_position <= action.end_position():
+                    elif action.type() == "delete-tree" and file_position == action.src_start():
                         self._register_outdated_comment(cosmetic_errors)
       
         self._next_comment()    
 
     def _register_outdated_comment(self, cosmetic_errors):
         if len(cosmetic_errors) > 0:
-            self._reviewable_comments[-1].add_error(CommentError.OUTDATED_COMMENT)
+            reviewable_comment = list(self._reviewable_comments().pop)
+            reviewable_comment.add_error(CommentError.OUTDATED_COMMENT)
+            self._reviewable_comments.add(reviewable_comment)
         else:
-            self._reviewable_comments.append(ReviewableComment(self._current_comment, errors=[CommentError.OUTDATED_COMMENT]))
+            self._reviewable_comments.add(ReviewableComment(self._current_comment, errors=[CommentError.OUTDATED_COMMENT]))
 
     def _full_analysis(self):
         self._outdated_analysis(self._tree)
@@ -164,7 +169,7 @@ class CommentAnalyser(ABC):
         if comment.category() != Category.UNTRACKABLE:
             if self._is_commented_code(comment.text()) and comment.category() != Category.DOCUMENTATION:
                 errors.append(CommentError.COMMENTED_CODE)
-                self._reviewable_comments.append(ReviewableComment(comment, errors))
+                self._reviewable_comments.add(ReviewableComment(comment, errors))
                 return errors
             
             if self._is_task_comment(comment.text()):
@@ -173,7 +178,7 @@ class CommentAnalyser(ABC):
                 errors.append(CommentError.SPELLING_ERROR)
                 description = spelling_suggestion
             if len(errors) > 0:
-                self._reviewable_comments.append(ReviewableComment(comment, errors, description=description))
+                self._reviewable_comments.add(ReviewableComment(comment, errors, description=description))
         
         return errors
 
