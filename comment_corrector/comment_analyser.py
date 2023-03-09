@@ -62,6 +62,7 @@ class CommentAnalyser(ABC):
             self._comment_index = 0
             self._current_comment = self._comments[self._comment_index]
             self._set_tree()
+            self._eof = int(self._tree['pos']) + int(self._tree['length']) 
             self._edit_script_actions = diff(self._files)
         elif comments_file2:
             self._analysis_strategy = self._cosmetic_analysis
@@ -127,26 +128,46 @@ class CommentAnalyser(ABC):
 
         self._next_comment()
 
-    def _check_relevance(self, file_position, length):
-        reference_point = file_position + length
+    def _check_relevance(self, entity):       
         if self._current_comment.text() in self._comments_file2:
             cosmetic_errors = self._cosmetic_check(self._current_comment)
             if CommentError.COMMENTED_CODE not in cosmetic_errors:
                 # Generally a change is comprised of many actions, meaning the register_outdated_comment function could be called several times.
                 # To ensure that a comment is only marked as outdated once a set is used for the variable reviewable_comments.
                 for action in self._edit_script_actions:
-                    if action.type() == "update-node" and file_position <= action.src_start() and action.src_start() <= reference_point:
+                    if self._is_comment_editing_action(action, entity):
                         self._register_outdated_comment(cosmetic_errors)
-                    elif action.type() == "insert-node" and file_position == action.dst_start():
-                        self._register_outdated_comment(cosmetic_errors)
-                    elif action.type() == "move-tree" and file_position == action.src_start():
-                        self._register_outdated_comment(cosmetic_errors) 
-                    elif action.type() == "move-tree" and file_position == action.dst_start():
-                        self._register_outdated_comment(cosmetic_errors)
-                    elif action.type() == "delete-tree" and file_position == action.src_start():
-                        self._register_outdated_comment(cosmetic_errors)
-      
+                        break
+
         self._next_comment()    
+
+    def _is_comment_editing_action(self, action, entity):
+        comment_editing_action = False
+        file_position = int(entity['pos'])
+        reference_point = file_position + int(entity['length'])
+
+        if action.type() == "update-node" and file_position <= action.src_start() and action.src_start() <= reference_point:
+            print("Update")
+            print(action)
+            comment_editing_action = True
+        elif action.type() == "insert-node" and file_position == action.dst_start():
+            print("Insert")
+            print(action)
+            comment_editing_action = True
+        elif action.type() == "move-tree" and file_position == action.src_start() and action.src_end() < self._eof:
+            print("Move tree")
+            print(action)
+            comment_editing_action = True
+        elif action.type() == "move-tree" and file_position == action.dst_start() and action.dst_end() < self._eof:
+            print("Move tree by delete")
+            print(action)
+            comment_editing_action = True
+        elif action.type() == "delete-tree" and file_position == action.src_start():
+            print("Delete tree")
+            print(action)
+            comment_editing_action = True
+        
+        return comment_editing_action
 
     def _register_outdated_comment(self, cosmetic_errors):
         if len(cosmetic_errors) > 0:

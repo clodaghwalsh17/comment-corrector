@@ -31,11 +31,11 @@ class PythonCommentAnalyser(CommentAnalyser):
                 elif self._current_comment.category() == Category.UNTRACKABLE:
                     self._next_comment()
                 else:
-                    self._check_relevance(int(entity['pos']), int(entity['length']))
+                    self._check_relevance(entity)
         
         if self.__comment_at_root(entity, entity_children[0]):
             print("Root found")
-            self._check_relevance(int(entity['pos']), int(entity['length']))
+            self._check_relevance(entity)
 
         i = 0
         while i < len(entity_children) and self._comment_index < len(self._comments):
@@ -54,7 +54,7 @@ class PythonCommentAnalyser(CommentAnalyser):
             
     def __match_comment(self, entity1, entity2):
         if self.__suitable_comment_gap(entity1, entity2) or self.__has_inline_comment(entity1):
-            self._check_relevance(int(entity1['pos']), int(entity1['length']))
+            self._check_relevance(entity1)
     
     def __suitable_comment_gap(self, current_entity, previous_entity):
         return (int(current_entity['pos']) - (int(previous_entity['pos']) + int(previous_entity['length']))) >= self._current_comment.length() 
