@@ -23,4 +23,4 @@ class EditScriptAction:
         return self.__dst_end
     
     def __repr__(self):
-        return 'EditScriptAction(%s, %s, %s, %s)' % (self.__type, self.__src_start, self.__src_end, self.__dst_start, self.__dst_end)  
+        return 'EditScriptAction(%s, %d, %d, %d, %d)' % (self.__type, self.__src_start, self.__src_end, self.__dst_start, self.__dst_end)  
