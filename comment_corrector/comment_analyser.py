@@ -13,7 +13,7 @@ import json
 class CommentAnalyser(ABC):
     COPYRIGHT_IDENTIFIERS = ["license", "licence", "copyright", "distributed", "warranty"]
     TASK_IDENTIFIERS = ["TODO", "FIXME", "FIX", "BUG", "HACK"]
-    SYMBOLS_REGEX = "[\(\)\{\}\[\]:\"'~^&|!><\+-/\*]"
+    SYMBOLS_REGEX = "[\(\)\{\}\[\]:\"'~\^&\|!></\+\*-]"
     ASSIGNMENT_REGEX = "="
 
     def __init__(self, files, code_word_regexes, terminator):
