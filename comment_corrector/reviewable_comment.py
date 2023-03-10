@@ -12,6 +12,9 @@ class ReviewableComment():
 
     def line_number(self):
         return self.__line_number
+    
+    def update_line_number(self, line_number):
+        self.__line_number = line_number
 
     def description(self):
         return self.__description

@@ -56,7 +56,7 @@ class CommentAnalyser(ABC):
         if comments_file1 and comments_file2:
             self._analysis_strategy = self._full_analysis
             self._comments = comments_file1 
-            self._comments_file2 = [comment.text() for comment in comments_file2]
+            self._comments_file2 = comments_file2
             comments_set = set(comments_file2)
             self._new_comments = comments_set.difference(comments_file1)
             self._comment_index = 0
@@ -123,13 +123,13 @@ class CommentAnalyser(ABC):
         return self._spell_checker.check_spelling(comment_text)
 
     def _check_comment(self):
-        if self._current_comment.text() in self._comments_file2:
+        if self._current_comment in self._comments_file2:
             self._cosmetic_check(self._current_comment)
 
         self._next_comment()
 
     def _check_relevance(self, entity):       
-        if self._current_comment.text() in self._comments_file2:
+        if self._current_comment in self._comments_file2:
             cosmetic_errors = self._cosmetic_check(self._current_comment)
             if CommentError.COMMENTED_CODE not in cosmetic_errors:
                 # Generally a change is comprised of many actions, meaning the register_outdated_comment function could be called several times.
@@ -170,12 +170,18 @@ class CommentAnalyser(ABC):
         return comment_editing_action
 
     def _register_outdated_comment(self, cosmetic_errors):
+        comment_equivalent = self._get_comment_equivalent()
         if len(cosmetic_errors) > 0:
             reviewable_comment = list(self._reviewable_comments().pop)
             reviewable_comment.add_error(CommentError.OUTDATED_COMMENT)
+            reviewable_comment.update_line_number(comment_equivalent.line_number())
             self._reviewable_comments.add(reviewable_comment)
         else:
-            self._reviewable_comments.add(ReviewableComment(self._current_comment, errors=[CommentError.OUTDATED_COMMENT]))
+            self._reviewable_comments.add(ReviewableComment(comment_equivalent, errors=[CommentError.OUTDATED_COMMENT]))
+
+    def _get_comment_equivalent(self):
+        index = next((i for i, item in enumerate(self._comments_file2) if item.text() == self._current_comment.text()), -1)
+        return self._comments_file2[index]
 
     def _full_analysis(self):
         self._outdated_analysis(self._tree)
