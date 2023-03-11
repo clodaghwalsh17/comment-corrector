@@ -5,3 +5,4 @@ class CommentError(Enum):
     REMAINING_TASK = 2
     COMMENTED_CODE = 3
     SPELLING_ERROR = 4
+    REFACTORED_NAME = 5

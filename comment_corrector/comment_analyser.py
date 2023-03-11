@@ -1,6 +1,6 @@
-from comment_corrector.semantic_diff import *
 from comment_corrector.comment_extractor import CommentExtractor
 from comment_corrector.spellchecker import SpellChecker
+from comment_corrector.semantic_diff import SemanticDiff
 from comment_corrector.reviewable_comment import ReviewableComment
 from comment_corrector.category import Category
 from comment_corrector.comment_error import CommentError
@@ -20,8 +20,9 @@ class CommentAnalyser(ABC):
         self._files = files
         self._code_word_regexes = code_word_regexes
         self._terminator = terminator
-        self._reviewable_comments = set()
+        self._reviewable_comments = []
         self._spell_checker = SpellChecker()
+        self._semantic_diff = SemanticDiff(files)
         self._set_analysis_strategy()
     
     def set_spellchecker_language(self, language):
@@ -35,7 +36,6 @@ class CommentAnalyser(ABC):
 
     def analyse_comments(self):
         self._analysis_strategy()
-        self._reviewable_comments = list(self._reviewable_comments)
         self._reviewable_comments.sort(key=Utils.sort_comments)
         return self._reviewable_comments
     
@@ -44,7 +44,7 @@ class CommentAnalyser(ABC):
         pass
 
     def _set_tree(self):
-        tree = json.loads(source_to_tree(self._files[0]))   
+        tree = json.loads(self._semantic_diff.source_to_tree(self._files[0]))   
         # self._tree is a dictionary with the keys type, pos, length, children      
         self._tree = tree['root'] 
 
@@ -59,11 +59,12 @@ class CommentAnalyser(ABC):
             self._comments_file2 = comments_file2
             comments_set = set(comments_file2)
             self._new_comments = comments_set.difference(comments_file1)
+            self._refactored_names = self._semantic_diff.refactored_names()
             self._comment_index = 0
             self._current_comment = self._comments[self._comment_index]
             self._set_tree()
             self._eof = int(self._tree['pos']) + int(self._tree['length']) 
-            self._edit_script_actions = diff(self._files)
+            self._edit_script_actions = self._semantic_diff.edit_script_actions()
         elif comments_file2:
             self._analysis_strategy = self._cosmetic_analysis
             self._comments = comments_file2
@@ -118,7 +119,15 @@ class CommentAnalyser(ABC):
                 return True
         
         return False
-     
+    
+    def _find_refactored_names(self, comment_text):
+        refactored_names = {}
+        for v,k in self._refactored_names.items():
+            result = self._match_phrase(v)(comment_text)
+            if result is not None:
+                refactored_names[v] = k
+        return refactored_names
+
     def _check_spelling(self, comment_text):
         return self._spell_checker.check_spelling(comment_text)
 
@@ -147,24 +156,14 @@ class CommentAnalyser(ABC):
         reference_point = file_position + int(entity['length'])
 
         if action.type() == "update-node" and file_position <= action.src_start() and action.src_start() <= reference_point:
-            print("Update")
-            print(action)
             comment_editing_action = True
         elif action.type() == "insert-node" and file_position == action.dst_start():
-            print("Insert")
-            print(action)
             comment_editing_action = True
         elif action.type() == "move-tree" and file_position == action.src_start() and action.src_end() < self._eof:
-            print("Move tree")
-            print(action)
             comment_editing_action = True
         elif action.type() == "move-tree" and file_position == action.dst_start() and action.dst_end() < self._eof:
-            print("Move tree by delete")
-            print(action)
             comment_editing_action = True
         elif action.type() == "delete-tree" and file_position == action.src_start():
-            print("Delete tree")
-            print(action)
             comment_editing_action = True
         
         return comment_editing_action
@@ -172,16 +171,19 @@ class CommentAnalyser(ABC):
     def _register_outdated_comment(self, cosmetic_errors):
         comment_equivalent = self._get_comment_equivalent()
         if len(cosmetic_errors) > 0:
-            reviewable_comment = list(self._reviewable_comments().pop)
+            reviewable_comment = self._get_registered_comment()
             reviewable_comment.add_error(CommentError.OUTDATED_COMMENT)
             reviewable_comment.update_line_number(comment_equivalent.line_number())
-            self._reviewable_comments.add(reviewable_comment)
         else:
-            self._reviewable_comments.add(ReviewableComment(comment_equivalent, errors=[CommentError.OUTDATED_COMMENT]))
+            self._reviewable_comments.append(ReviewableComment(comment_equivalent, errors=[CommentError.OUTDATED_COMMENT]))
 
     def _get_comment_equivalent(self):
         index = next((i for i, item in enumerate(self._comments_file2) if item.text() == self._current_comment.text()), -1)
         return self._comments_file2[index]
+
+    def _get_registered_comment(self):
+        index = next((i for i, item in enumerate(self._reviewable_comments) if item.text() == self._current_comment.text()), -1)
+        return self._reviewable_comments[index]
 
     def _full_analysis(self):
         self._outdated_analysis(self._tree)
@@ -190,22 +192,26 @@ class CommentAnalyser(ABC):
     
     def _cosmetic_check(self, comment):
         errors = []
-        description = ""
-        spelling_suggestion = self._check_spelling(comment.text()) # TODO make more readable
+        description = "" 
+        spelling_suggestion = self._check_spelling(comment.text()) 
+        refactored_names = self._find_refactored_names(comment.text()) 
 
         if comment.category() != Category.UNTRACKABLE:
             if self._is_commented_code(comment.text()) and comment.category() != Category.DOCUMENTATION:
                 errors.append(CommentError.COMMENTED_CODE)
-                self._reviewable_comments.add(ReviewableComment(comment, errors))
+                self._reviewable_comments.append(ReviewableComment(comment, errors))
                 return errors
             
             if self._is_task_comment(comment.text()):
                 errors.append(CommentError.REMAINING_TASK)            
             if spelling_suggestion:
                 errors.append(CommentError.SPELLING_ERROR)
-                description = spelling_suggestion
+                description += self._provide_spelling_suggestions(spelling_suggestion)
+            if refactored_names:
+                errors.append(CommentError.REFACTORED_NAME)
+                description += self._describe_refactored_names(refactored_names)
             if len(errors) > 0:
-                self._reviewable_comments.add(ReviewableComment(comment, errors, description=description))
+                self._reviewable_comments.append(ReviewableComment(comment, errors, description=description))
         
         return errors
 
@@ -216,3 +222,15 @@ class CommentAnalyser(ABC):
     def _no_analysis(self):
         # Exiting as no comments to review
         sys.exit()
+
+    def _provide_spelling_suggestions(self, spelling_suggestions):
+        suggestions = "The following words are misspelt:\n"
+        for v, k in spelling_suggestions.items():
+            suggestions += "- '{}' consider replacing with {}\n".format(v, k)
+        return suggestions
+    
+    def _describe_refactored_names(self, refactored_names):
+        description = "Name(s) referenced in this comment no longer exist:\n"
+        for v, k in refactored_names.items():
+            description += "- '{}' was replaced by '{}'\n".format(v, k) 
+        return description

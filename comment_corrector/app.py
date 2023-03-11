@@ -34,4 +34,5 @@ def run():
         analyser.set_spellchecker_custom_words(args.words)
     
     comments = analyser.analyse_comments() 
-    print(comments)       
+    for comment in comments:
+        print(comment)   
