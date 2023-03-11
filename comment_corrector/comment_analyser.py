@@ -224,7 +224,7 @@ class CommentAnalyser(ABC):
         sys.exit()
 
     def _provide_spelling_suggestions(self, spelling_suggestions):
-        suggestions = "The following words are misspelt:\n"
+        suggestions = "The following word(s) are misspelt:\n"
         for v, k in spelling_suggestions.items():
             suggestions += "- '{}' consider replacing with {}\n".format(v, k)
         return suggestions

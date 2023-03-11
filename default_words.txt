@@ -5,3 +5,5 @@ fixme
 http
 www
 param
+func
+fn

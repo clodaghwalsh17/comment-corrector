@@ -34,5 +34,8 @@ def run():
         analyser.set_spellchecker_custom_words(args.words)
     
     comments = analyser.analyse_comments() 
-    for comment in comments:
-        print(comment)   
+    if len(comments) == 0:
+        print("Comment Corrector Found No Errors")
+    else:
+        for comment in comments:
+            print(comment)   
