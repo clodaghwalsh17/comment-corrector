@@ -47,9 +47,9 @@ class ReviewableComment():
     
     def __str__(self):
         if self.__description == "":
-            return "Comment '{}' on line {} is outdated.\nReason: {}\n".format(self.__text, self.__line_number, self.print_errors())
+            return "Comment '{}' on line {} needs attention.\nReason: {}\n".format(self.__text, self.__line_number, self.print_errors())
         else:
-            return "Comment '{}' on line {} is outdated.\nReason: {}\nAdditional Information:\n{}\n".format(self.__text, self.__line_number, self.print_errors(), self.__description)
+            return "Comment '{}' on line {} needs attention.\nReason: {}\nAdditional Information:\n{}\n".format(self.__text, self.__line_number, self.print_errors(), self.__description)
 
     def __repr__(self):
         return 'ReviewableComment(%s, %s, %s, %s)' % (self.__text, self.__line_number, self.__errors, self.__description)  
