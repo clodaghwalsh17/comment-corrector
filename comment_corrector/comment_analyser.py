@@ -59,7 +59,7 @@ class CommentAnalyser(ABC):
             self._comments_file2 = comments_file2
             comments_set = set(comments_file2)
             self._new_comments = comments_set.difference(comments_file1)
-            self._refactored_names = self._semantic_diff.refactored_names()
+            self._refactored_names, self._refactored_name_components = self._semantic_diff.refactored_names()
             self._comment_index = 0
             self._current_comment = self._comments[self._comment_index]
             self._set_tree()
@@ -127,6 +127,13 @@ class CommentAnalyser(ABC):
             if result is not None:
                 refactored_names[v] = k
         return refactored_names
+
+    def _contains_refactored_name_components(self, comment_text):
+        for component in self._refactored_name_components:
+            result = self._match_phrase(component)(comment_text)
+            if result is not None:
+                return True
+        return False
 
     def _check_spelling(self, comment_text):
         return self._spell_checker.check_spelling(comment_text)
@@ -206,10 +213,13 @@ class CommentAnalyser(ABC):
                 errors.append(CommentError.REMAINING_TASK)            
             if spelling_suggestion:
                 errors.append(CommentError.SPELLING_ERROR)
-                description += self._provide_spelling_suggestions(spelling_suggestion)
+                description += "* " + self._provide_spelling_suggestions(spelling_suggestion)
             if refactored_names:
                 errors.append(CommentError.REFACTORED_NAME)
-                description += self._describe_refactored_names(refactored_names)
+                description += "* " + self._describe_refactored_names(refactored_names)
+            if self._contains_refactored_name_components(comment.text()):
+                errors.append(CommentError.REFACTORED_NAME)
+                description += "* " + "Name(s) referenced in this comment no longer exist\n"
             if len(errors) > 0:
                 self._reviewable_comments.append(ReviewableComment(comment, errors, description=description))
         

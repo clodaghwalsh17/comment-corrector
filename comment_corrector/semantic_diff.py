@@ -12,6 +12,7 @@ class SemanticDiff:
         self.__file2 = files[1]
         self.__edit_script_actions = []
         self.__refactored_names = {}
+        self.__refactored_name_components = []
         self.__diff()
 
     def source_to_tree(self, file):
@@ -25,7 +26,7 @@ class SemanticDiff:
         return self.__edit_script_actions
     
     def refactored_names(self):
-        return self.__refactored_names
+        return self.__refactored_names, self.__refactored_name_components
 
     def __diff(self):
         try:
@@ -90,7 +91,6 @@ class SemanticDiff:
         The action type can be one of insert-node, update-node, delete-node, insert-tree, move-tree, delete-tree
         '''
         actions = edit_script.split("===\n")
-        edit_script_actions = []
 
         for action in actions[1:]:
             if action == '':
@@ -108,10 +108,17 @@ class SemanticDiff:
                 replace_info = action[replace_index:].strip()
                 # An update-node provides information on the previous and current value
                 # This is present in the edit script following the format "replace x by y"
-                initial_value = replace_info.split(" ")[1]
-                if self.__is_valid_name(initial_value):
-                    updated_value = replace_info.split(" ")[3]
-                    self.__refactored_names[initial_value] = updated_value          
+                initial_name = replace_info.split(" ")[1]
+                if self.__is_valid_name(initial_name):
+                    updated_name = replace_info.split(" ")[3]
+                    self.__refactored_names[initial_name] = updated_name         
+
+                    if "_" in initial_name:
+                        self.__refactored_name_components.append(' '.join(initial_name.split("_")))
+                    if "-" in initial_name:
+                        self.__refactored_name_components.append(' '.join(initial_name.split("-")))
+                    if re.search(r'[A-Z]', initial_name) is not None:
+                        self.__refactored_name_components.append(' '.join(re.split('[A-Z]', initial_name)))                   
 
             to_index = action.find('to\n')
             if to_index != -1:
