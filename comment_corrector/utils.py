@@ -3,38 +3,63 @@ import json
 
 SOURCE = "supported_languages.json"
 
-class Utils: 
-    def __init__(self):
-        with open(SOURCE) as f:
-            data = json.load(f)
-        # self.mapping is a list of dictionaries
-        self.mapping = data['supported_languages']
+def get_data():
+    with open(SOURCE) as f:
+        data = json.load(f)
+        return data['supported_languages']
 
-    def get_file_extension(self, file):
+class Utils:    
+    # data is a list of dictionaries
+    data = get_data()
+    
+    @staticmethod
+    def get_file_extension(file):
         _, extension = os.path.splitext(file)
         return extension
 
-    def get_mime_type(self, file):
-        extension = self.get_file_extension(file)
-        map = next((mapping for mapping in self.mapping if extension in mapping['file_extension']), None)
+    @staticmethod
+    def get_mime_type(file):
+        extension = Utils.get_file_extension(file)
+        map = next((mapping for mapping in Utils.data if extension in mapping['file_extension']), None)
         return map['mime_type']
 
-    def get_programming_language(self, file):
-        extension = self.get_file_extension(file)
-        map = next((mapping for mapping in self.mapping if extension in mapping['file_extension']), None)
+    @staticmethod
+    def get_programming_language(file):
+        extension = Utils.get_file_extension(file)
+        map = next((mapping for mapping in Utils.data if extension in mapping['file_extension']), None)
         return map['language']
 
-    def get_supported_languages(self):
-        return [mapping['language'] for mapping in self.mapping]
-
-    def get_supported_file_extensions(self):
-        return [mapping['file_extension'] for mapping in self.mapping]
+    @staticmethod
+    def get_code_word_regexes(language):
+        map = next((mapping for mapping in Utils.data if language in mapping['language']), None)
+        return map['code_word_regexes']
     
-    def get_mapping(self):
-        return self.mapping
+    @staticmethod
+    def get_terminator(language):
+        map = next((mapping for mapping in Utils.data if language in mapping['language']), None)
+        return map.get('terminator')
 
-    def validate_files(self, files):
-        if (self.get_file_extension(files[0]) == self.get_file_extension(files[1])) and self.get_file_extension(files[0]) in self.get_supported_file_extensions():
+    @staticmethod
+    def get_supported_languages():
+        return [mapping['language'] for mapping in Utils.data]
+
+    @staticmethod
+    def get_supported_file_extensions():
+        file_extensions = [mapping['file_extension'] for mapping in Utils.data]
+        return Utils.flatten_to_list(file_extensions)
+    
+    @staticmethod
+    def flatten_to_list(struct):
+        flatten_operation = lambda *n: (e for a in n for e in (flatten_operation(*a) if isinstance(a, (tuple, list)) else (a,)))
+        return list(flatten_operation(struct))
+    
+    @staticmethod
+    def validate_files(files):
+        if (Utils.get_file_extension(files[0]) == Utils.get_file_extension(files[1])) and Utils.get_file_extension(files[0]) in Utils.get_supported_file_extensions():
             return
         else:
             raise Exception("Error with input files.\nInput files supplied are either written in an unsupported language or the files are not written in the same language.") 
+        
+    @staticmethod
+    def sort_comments(comment):
+        return comment.line_number()

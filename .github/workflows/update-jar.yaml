@@ -3,7 +3,7 @@ name: 'Update JAR file'
 on:
   push:
     paths:
-      - '**.java'
+      - 'src/**/*.java'
       - 'pom.xml'
 
 jobs:

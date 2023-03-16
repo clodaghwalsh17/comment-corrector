@@ -3,17 +3,22 @@
         {
             "language" : "Java",
             "file_extension" : ".java",
-            "mime_type" : "text/x-java-source"
+            "mime_type" : "text/x-java-source",
+            "terminator" : ";"
         },
         {
             "language" : "Python",
             "file_extension" : ".py",
-            "mime_type" : "text/x-python"
+            "mime_type" : "text/x-python",
+            "code_word_regexes" : ["assert", "async", "await", "b\"", "bool", "break", "continue", "def", "del", "elif", "False", 
+            "global", "import", "import [a-zA-Z0-9.-_] as", "is None", "is not", "nonlocal", "None", "not in", "pass", "raise", "range", 
+            "return", "self", "str", "True", "yield"]
         },
         {
             "language" : "C",
             "file_extension" : [".c", ".h"],
-            "mime_type" : "text/x-c"
+            "mime_type" : "text/x-c",
+            "terminator" : ";"
         }      
     ]
 }

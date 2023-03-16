@@ -9,21 +9,22 @@ public class TreeGeneratorFactory {
     private TreeGeneratorFactory() {      
     }
 
-    public static TreeGenerator treeGenerator(String programmingLanguage) {
+    public static TreeGenerator treeGenerator(String fileExtension) {
         TreeGenerator gen = null;
 
-        if(programmingLanguage.isEmpty()) {
+        if(fileExtension.isEmpty()) {
             return gen;
         }
 
-        switch(programmingLanguage) {
-            case "Java":
+        switch(fileExtension) {
+            case "java":
                 gen = new JdtTreeGenerator();
                 break;
-            case "Python":
+            case "py":
                 gen = new PythonTreeGenerator();
                 break;
-            case "C":
+            case "c":
+            case "h":
                 gen = new CTreeGenerator();
                 break;
             default:
@@ -32,4 +33,5 @@ public class TreeGeneratorFactory {
 
         return gen;        
     }
+   
 }
