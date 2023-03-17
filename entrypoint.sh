@@ -1,4 +1,4 @@
 #!/bin/sh -l
 echo "Action Complete"
 echo "::error ::Message from Comment Corrector"
-exit 0
+exit 1
