@@ -20,3 +20,5 @@ RUN git clone --recurse-submodules https://github.com/GumTreeDiff/tree-sitter-pa
 COPY . /opt/comment_corrector
 WORKDIR /opt/comment_corrector
 RUN pip3 install -r requirements.txt
+
+ENTRYPOINT [ "/entrypoint.sh" ]
