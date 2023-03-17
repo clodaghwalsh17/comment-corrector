@@ -21,4 +21,4 @@ COPY . /opt/comment_corrector
 WORKDIR /opt/comment_corrector
 RUN pip3 install -r requirements.txt
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "./entrypoint.sh" ]
