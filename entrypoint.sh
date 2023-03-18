@@ -1,6 +1,6 @@
 #!/bin/sh -l
 
-output=$(python3 -m comment_corrector v1.py v2.py)
+output=$(python3 v1.py)
 
 echo $output
 if [ "$output" = "" ]; then
