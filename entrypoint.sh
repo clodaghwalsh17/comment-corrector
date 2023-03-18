@@ -8,5 +8,8 @@ if [ "$output" = "" ]; then
     exit 0
 else
     echo "::warning ::Comment Corrector marked the following comments as in need of review"
+    echo "::group::Comments to Review"
+    echo "Comment 1"
+    echo "::endgroup::"
     exit 1
 fi
