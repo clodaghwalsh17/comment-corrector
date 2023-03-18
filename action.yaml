@@ -11,5 +11,5 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs:spellchecker_language}}
-    - ${{ inputs:custom_words_filepath}}
+    - ${{ inputs:spellchecker_language }}
+    - ${{ inputs:custom_words_filepath }}
