@@ -4,9 +4,11 @@ inputs:
   spellchecker_language:
     description: 'Language to be used by the spell checker'
     required: false
+    default: ''
   custom_words_filepath:
     description: 'File path to a list of custom words to be added to the spell checker as recognised words'
     required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'
