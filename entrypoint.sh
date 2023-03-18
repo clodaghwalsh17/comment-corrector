@@ -1,6 +1,6 @@
 #!/bin/sh -l
 
-output=$(cd / && python3 -m comment_corrector file_a.py file_b.py)
+output=$(cd / && python3 -m comment_corrector /github/workspace/file_a.py /github/workspace/file_b.py)
 
 if [ "$output" = "" ]; then
     echo "Comment Corrector identified no comments in need of review"
