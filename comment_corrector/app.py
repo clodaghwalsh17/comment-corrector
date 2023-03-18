@@ -2,13 +2,12 @@ from comment_corrector.utils import Utils
 from comment_corrector.python_comment_analyser import PythonCommentAnalyser
 import argparse
 import sys
+import os
 
 def init_argparse():        
     parser = argparse.ArgumentParser()
     parser.add_argument("file_v1", help = "Version 1 of file to be analysed")
     parser.add_argument("file_v2", help = "Version 2 of file to be analysed")
-    parser.add_argument('-l', '--language', type=str, help = "Optional language for spell checker")
-    parser.add_argument('-w', '--words', type=str, help = "Optional custom words for spell checker")
     args = parser.parse_args()
     return args
     
@@ -25,17 +24,17 @@ def run():
     language = Utils.get_programming_language(args.file_v1)
     if language == "Python":
         analyser = PythonCommentAnalyser(files)
+
+    language = os.environ['INPUT_SPELLCHECKER_LANGUAGE']
+    words = os.environ['INPUT_CUSTOM_WORDS_FILEPATH']
     
-    if args.language and args.words:
-        analyser.set_spellchecker_settings(args.language, args.words)
-    elif args.language:
-        analyser.set_spellchecker_language(args.language)
-    elif args.words:
-        analyser.set_spellchecker_custom_words(args.words)
+    if language and words:
+        analyser.set_spellchecker_settings(language, words)
+    elif language:
+        analyser.set_spellchecker_language(language)
+    elif words:
+        analyser.set_spellchecker_custom_words(words)
     
     comments = analyser.analyse_comments() 
-    if len(comments) == 0:
-        print("Comment Corrector Found No Errors")
-    else:
-        for comment in comments:
-            print(comment)   
+    for comment in comments:
+        print(comment)   
