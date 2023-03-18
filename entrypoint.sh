@@ -1,5 +1,5 @@
 #!/bin/sh -l
-
+cd /
 output=$(python3 v1.py)
 
 echo $output
