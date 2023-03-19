@@ -11,17 +11,18 @@ class SpellChecker():
 
         self.__checker = EnchantSpellChecker(self.__language)
 
-        self.__add_custom_words('../default_words.txt')
+        self.__add_custom_words('default_words.txt')
         
         if custom_words_file: 
             self.__add_custom_words('/github/workspace/.github/workflows/' + custom_words_file)
 
     def __add_custom_words(self, file):
-        print("New words being added")
         with open(file) as f:
+            print("File opened")
             custom_words = f.readlines()
 
             for word in custom_words:
+                print(word)  
                 self.__checker.add(word) 
     
     def _split_camel_case(self, text):
