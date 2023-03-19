@@ -27,13 +27,13 @@ def run():
     if language == "Python":
         analyser = PythonCommentAnalyser(files)
    
-    if args.language != '' and args.words != '':
+    if args.language != 'undefined' and args.words != 'undefined':
         print("Setting both")
         analyser.set_spellchecker_settings(args.language, args.words)
-    elif args.language != '':
+    elif args.language != 'undefined':
         print("Setting language")
         analyser.set_spellchecker_language(args.language)
-    elif args.words != '':
+    elif args.words != 'undefined':
         print("Setting custom words")
         analyser.set_spellchecker_custom_words(args.words)
     
