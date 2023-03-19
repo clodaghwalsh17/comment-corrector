@@ -11,7 +11,7 @@ class SpellChecker():
 
         self.__checker = EnchantSpellChecker(self.__language)
 
-        self.__add_custom_words('default_words.txt')
+        self.__add_custom_words('/github/workspace/default_words.txt')
         
         if custom_words_filepath: 
             self.__add_custom_words(custom_words_filepath)
