@@ -26,7 +26,7 @@ def run():
         analyser = PythonCommentAnalyser(files)
 
     language = os.environ.get('INPUT_SPELLCHECKER-LANGUAGE')
-    words = os.environ.get('INPUT_CUSTOM-WORDS-FILEPATH')
+    words = os.environ.get('INPUT_CUSTOM-WORDS-FILE')
     
     if language and words:
         analyser.set_spellchecker_settings(language, words)

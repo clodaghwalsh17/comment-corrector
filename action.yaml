@@ -4,12 +4,12 @@ inputs:
   spellchecker-language:
     description: 'Language to be used by the spell checker'
     required: false
-  custom-words-filepath:
-    description: 'File path to a list of custom words to be added to the spell checker as recognised words'
+  custom-words-file:
+    description: 'File with a list of custom words to be added to the spell checker as recognised words'
     required: false
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
     - ${{ inputs.spellchecker-language }}
-    - ${{ inputs.custom-words-filepath }}
+    - ${{ inputs.custom-words-file }}

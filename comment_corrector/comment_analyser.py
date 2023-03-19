@@ -29,10 +29,10 @@ class CommentAnalyser(ABC):
         self._spell_checker = SpellChecker(language=language)
 
     def set_spellchecker_custom_words(self, custom_words):
-        self._spell_checker = SpellChecker(custom_words_filepath=custom_words)
+        self._spell_checker = SpellChecker(custom_words_file=custom_words)
 
     def set_spellchecker_settings(self, language, custom_words):
-        self._spell_checker = SpellChecker(language=language,custom_words_filepath=custom_words)
+        self._spell_checker = SpellChecker(language=language,custom_words_file=custom_words)
 
     def analyse_comments(self):
         self._analysis_strategy()

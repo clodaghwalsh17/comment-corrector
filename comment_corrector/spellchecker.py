@@ -3,7 +3,7 @@ import re
 
 class SpellChecker():
 
-    def __init__(self, language=None, custom_words_filepath=None):
+    def __init__(self, language=None, custom_words_file=None):
         if language:
             self.__language = language
         else:
@@ -13,8 +13,8 @@ class SpellChecker():
 
         self.__add_custom_words('../default_words.txt')
         
-        if custom_words_filepath: 
-            self.__add_custom_words(custom_words_filepath)
+        if custom_words_file: 
+            self.__add_custom_words('/github/workspace/.github/workflows/' + custom_words_file)
 
     def __add_custom_words(self, file):
         with open(file) as f:
