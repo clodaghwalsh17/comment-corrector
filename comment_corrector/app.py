@@ -27,12 +27,18 @@ def run():
 
     language = os.environ.get('INPUT_SPELLCHECKER-LANGUAGE')
     words = os.environ.get('INPUT_CUSTOM-WORDS-FILE')
+
+    print(language)
+    print(words)
     
     if language and words:
+        print("Setting both")
         analyser.set_spellchecker_settings(language, words)
     elif language:
+        print("Setting language")
         analyser.set_spellchecker_language(language)
     elif words:
+        print("Setting custom words")
         analyser.set_spellchecker_custom_words(words)
     
     comments = analyser.analyse_comments() 

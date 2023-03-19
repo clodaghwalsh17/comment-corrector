@@ -17,6 +17,7 @@ class SpellChecker():
             self.__add_custom_words('/github/workspace/.github/workflows/' + custom_words_file)
 
     def __add_custom_words(self, file):
+        print("New words being added")
         with open(file) as f:
             custom_words = f.readlines()
 
