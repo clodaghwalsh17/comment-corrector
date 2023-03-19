@@ -1,6 +1,6 @@
 #!/bin/sh -l
-echo "${{ inputs.spellchecker-language }}"
-echo "${{ inputs.custom-words-file }}"
+echo "$1"
+echo "$2"
 
 echo "$(ls /github/workspace/.github/workflows)"
 
