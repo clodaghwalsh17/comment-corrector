@@ -1,4 +1,7 @@
 #!/bin/sh -l
+echo "${{ inputs.spellchecker-language }}"
+echo "${{ inputs.custom-words-file }}"
+
 echo "$(ls /github/workspace/.github/workflows)"
 
 output=$(cd / && python3 -m comment_corrector /github/workspace/file_a.py /github/workspace/file_b.py)
