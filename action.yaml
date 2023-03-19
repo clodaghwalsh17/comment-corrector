@@ -1,17 +1,15 @@
 name: 'Comment Corrector'
 description: 'Analyse source code for any discrepancies between a comment and the code it describes'
 inputs:
-  spellchecker_language:
+  spellchecker-language:
     description: 'Language to be used by the spell checker'
     required: false
-    default: ''
-  custom_words_filepath:
+  custom-words-filepath:
     description: 'File path to a list of custom words to be added to the spell checker as recognised words'
     required: false
-    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs:spellchecker_language }}
-    - ${{ inputs:custom_words_filepath }}
+    - ${{ inputs.spellchecker-language }}
+    - ${{ inputs.custom-words-filepath }}
