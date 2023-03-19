@@ -1,4 +1,5 @@
 #!/bin/sh -l
+echo "$(ls /github/workspace/.github/workflows)"
 
 output=$(cd / && python3 -m comment_corrector /github/workspace/file_a.py /github/workspace/file_b.py)
 
