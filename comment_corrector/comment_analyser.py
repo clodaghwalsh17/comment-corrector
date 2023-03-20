@@ -21,7 +21,7 @@ class CommentAnalyser(ABC):
         self._code_word_regexes = code_word_regexes
         self._terminator = terminator
         self._reviewable_comments = []
-        self._spell_checker = SpellChecker()
+        self._spell_checker = None
         self._semantic_diff = SemanticDiff(files)
         self._set_analysis_strategy()
     
@@ -35,6 +35,8 @@ class CommentAnalyser(ABC):
         self._spell_checker = SpellChecker(language=language,custom_words_file=custom_words)
 
     def analyse_comments(self):
+        if self._spell_checker is None:
+            self._spell_checker = SpellChecker()
         self._analysis_strategy()
         self._reviewable_comments.sort(key=Utils.sort_comments)
         return self._reviewable_comments
