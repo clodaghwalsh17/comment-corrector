@@ -8,7 +8,6 @@ def init_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument("file_v1", help = "Version 1 of file to be analysed")
     parser.add_argument("file_v2", help = "Version 2 of file to be analysed")
-    parser.add_argument('-l', '--language', type=str, help = "Optional language for spell checker")
     parser.add_argument('-w', '--words', type=str, help = "Optional custom words for spell checker")
     args = parser.parse_args()
     return args
@@ -27,11 +26,7 @@ def run():
     if language == "Python":
         analyser = PythonCommentAnalyser(files)
    
-    if args.language != 'undefined' and args.words != 'undefined':
-        analyser.set_spellchecker_settings(args.language, args.words)
-    elif args.language != 'undefined':
-        analyser.set_spellchecker_language(args.language)
-    elif args.words != 'undefined':
+    if args.words != 'undefined':
         analyser.set_spellchecker_custom_words(args.words)
     
     comments = analyser.analyse_comments() 

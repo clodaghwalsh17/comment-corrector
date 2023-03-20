@@ -25,14 +25,8 @@ class CommentAnalyser(ABC):
         self._semantic_diff = SemanticDiff(files)
         self._set_analysis_strategy()
     
-    def set_spellchecker_language(self, language):
-        self._spell_checker = SpellChecker(language=language)
-
     def set_spellchecker_custom_words(self, custom_words):
         self._spell_checker = SpellChecker(custom_words_file=custom_words)
-
-    def set_spellchecker_settings(self, language, custom_words):
-        self._spell_checker = SpellChecker(language=language,custom_words_file=custom_words)
 
     def analyse_comments(self):
         if self._spell_checker is None:
