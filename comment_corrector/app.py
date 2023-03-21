@@ -2,7 +2,8 @@ from comment_corrector.utils import Utils
 from comment_corrector.python_comment_analyser import PythonCommentAnalyser
 import argparse
 import sys
-import os
+
+GITHUB_WORKSPACE_PREFIX = '/github/workspace/'
 
 def init_argparse():        
     parser = argparse.ArgumentParser()
@@ -30,9 +31,12 @@ def run():
         analyser.set_spellchecker_custom_words(args.words)
     
     comments = analyser.analyse_comments() 
+    
+    output = "::group::{}\n".format(args.file_v1.removeprefix(GITHUB_WORKSPACE_PREFIX))
     for comment in comments:
-        print(comment)   
+        output += str(comment) 
 
-    output = "::group::v2.py Content ::endgroup::" 
+    output += "::endgroup::" 
     print(output)
+    
     
