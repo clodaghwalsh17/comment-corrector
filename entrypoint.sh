@@ -7,8 +7,6 @@ if [ "$output" = "" ]; then
     exit 0
 else
     echo "::warning ::Comment Corrector identified comments in need of review"
-    echo "::group::v2.py"
     echo "$output"
-    echo "::endgroup::"
     exit 1
 fi

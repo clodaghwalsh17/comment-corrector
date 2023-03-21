@@ -32,3 +32,7 @@ def run():
     comments = analyser.analyse_comments() 
     for comment in comments:
         print(comment)   
+
+    output = "::group::v2.py Content ::endgroup::" 
+    print(output)
+    
