@@ -17,6 +17,8 @@ RUN git clone --recurse-submodules https://github.com/GumTreeDiff/tree-sitter-pa
     && cd /opt/tree-sitter-parser \
     && pip3 install -r requirements.txt
 
+RUN git config --system --add safe.directory '*'
+
 COPY . /
 RUN pip3 install -r requirements.txt
 

@@ -1,4 +1,6 @@
 #!/bin/bash -l
+cd /
+
 IFS='.'
 
 file="file_a.py"
