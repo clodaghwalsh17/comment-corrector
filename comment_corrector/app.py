@@ -3,8 +3,6 @@ from comment_corrector.python_comment_analyser import PythonCommentAnalyser
 import argparse
 import sys
 
-GITHUB_WORKSPACE_PREFIX = '/github/workspace/'
-
 def init_argparse():        
     parser = argparse.ArgumentParser()
     parser.add_argument("file_v1", help = "Version 1 of file to be analysed")
@@ -32,11 +30,8 @@ def run():
     
     comments = analyser.analyse_comments() 
     
-    output = "::group::{}\n".format(args.file_v1.removeprefix(GITHUB_WORKSPACE_PREFIX))
+    output = ""
     for comment in comments:
         output += str(comment) 
 
-    output += "::endgroup::" 
     print(output)
-    
-    
