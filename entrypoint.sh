@@ -1,5 +1,5 @@
 #!/bin/bash -l
-cd /
+cd /github/workspace
 
 IFS='.'
 
@@ -12,7 +12,7 @@ tmp_file="/tmp/${strarr[0]}_prev.${strarr[1]}"
 touch "$tmp_file"
 echo $file_content >> "$tmp_file"
 
-output=$(python3 -m comment_corrector "$file" "$tmp_file" -w $1)
+output=$(python3 -m /comment_corrector "$file" "$tmp_file" -w $1)
 
 if [ "$output" = "" ]; then
     echo "Comment Corrector identified no comments in need of review"
