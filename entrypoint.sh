@@ -18,9 +18,9 @@ do
 
     # TODO check if exit code of comment corrector is not zero
     if [ "$output" = "" ]; then
-        echo "Comment Corrector identified no comments in need of review in the file "$file""
+        echo "Comment Corrector identified no comments in need of review"
     else
-        echo "::warning ::Comment Corrector identified comments in need of review"
+        echo "::warning ::Comment Corrector identified comments in need of review in the file "$file""
         echo "::group::"$file""
         echo "$output"
         echo "::endgroup::"
