@@ -12,6 +12,7 @@ tmp_file="/tmp/${strarr[0]}_prev.${strarr[1]}"
 touch "$tmp_file"
 echo $file_content >> "$tmp_file"
 
+echo "$1"
 output=$(cd / && python3 -m comment_corrector "$tmp_file" "$file" -w $1)
 
 if [ "$output" = "" ]; then
