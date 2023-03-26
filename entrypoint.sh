@@ -1,6 +1,4 @@
 #!/bin/bash -l
-IFS='.'
-
 files=$(cd / && python3 retrieve_files.py)
 
 for file in ${files[@]}; 
@@ -11,7 +9,8 @@ do
     sha=$(cd /github/workspace && git log --skip=1 --max-count=1 --pretty=format:%H "$file")
     # TODO check that sha is not empty
     file_content=$(git show $sha:"$file")
-    tmp_file="/tmp/$file"
+    # TODO account for case where file inside a folder
+    tmp_file="/tmp/$file" 
     touch "$tmp_file"
     echo "$file_content" >> "$tmp_file"
 
