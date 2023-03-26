@@ -13,7 +13,8 @@ touch "$tmp_file"
 echo $file_content >> "$tmp_file"
 
 echo "$1"
-output=$(cd / && python3 -m comment_corrector "$tmp_file" "$file" -w $1)
+echo "$1"
+output=$(cd / && python3 -m comment_corrector "$tmp_file" "$file" -w "$1")
 
 if [ "$output" = "" ]; then
     echo "Comment Corrector identified no comments in need of review"
