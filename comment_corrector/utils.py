@@ -56,9 +56,9 @@ class Utils:
     @staticmethod
     def validate_files(files):
         if Utils.get_file_extension(files[0]) not in Utils.get_supported_file_extensions():
-            raise Exception("Error with input file.\nInput file is written in an unsupported language.")
+            raise Exception("Error with input file. Input file is written in an unsupported language.")
         if len(files) == 2 and Utils.get_file_extension(files[0]) != Utils.get_file_extension(files[1]):
-            raise Exception("Error with input files.\nInput files supplied are not written in the same language.") 
+            raise Exception("Error with input files. Input files supplied are not written in the same language.") 
         else:
             return
     
