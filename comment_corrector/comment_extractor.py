@@ -27,12 +27,12 @@ class CommentExtractor():
                         comments.sort(key=Utils.sort_comments) 
                 except Exception as e:        
                     print(e)  
-                    sys.exit() 
+                    sys.exit(1) 
             
             return comments
         except Exception as e:        
             print(e)  
-            sys.exit()  
+            sys.exit(1)  
 
     def __find_python_documentation_comments(self, file):
         single_quote_pattern = "'{3}[ \t\n\r]*([<>%!@#%^&?/¬~|\\\\`'._,;:a-zA-Z0-9\+-/\*=\(\)\[\]\{\}\n ]+)'{3}" 

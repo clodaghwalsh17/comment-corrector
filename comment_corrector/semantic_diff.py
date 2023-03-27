@@ -32,7 +32,7 @@ class SemanticDiff:
 
         except Exception as e:
             print(e)  
-            sys.exit()
+            sys.exit(1)
 
     def __diff(self):
         try:
@@ -40,7 +40,7 @@ class SemanticDiff:
             self.__process_edit_script(edit_script)
         except Exception as e:
             print(e)  
-            sys.exit()
+            sys.exit(1)
 
     def __gumtree_editscript(self):  
         process = subprocess.run(["java", "-jar", SEMANTIC_DIFF_TOOL_PATH, "editscript", self.__file1, self.__file2], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)

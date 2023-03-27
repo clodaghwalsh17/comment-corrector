@@ -21,7 +21,13 @@ do
         output=$(cd / && python3 -m comment_corrector "$workspace_file" -w "$1")
     fi    
 
-    # TODO check if exit code of comment corrector is not zero
+    exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+        echo "::error ::Comment Corrector failed due to the following error."
+        echo "$output"
+        exit 1
+    fi
+
     if [ "$output" = "" ]; then
         echo "Comment Corrector identified no comments in need of review"
     else

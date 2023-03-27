@@ -238,7 +238,7 @@ class CommentAnalyser(ABC):
 
     def _no_analysis(self):
         # Exiting as no comments to review
-        sys.exit()
+        sys.exit(0)
 
     def _provide_spelling_suggestions(self, spelling_suggestions):
         suggestions = "The following word(s) are misspelt:\n"

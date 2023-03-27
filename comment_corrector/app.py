@@ -22,7 +22,7 @@ def run():
         Utils.validate_files(files)
     except Exception as e:
         print(e)  
-        sys.exit()
+        sys.exit(1)
 
     language = Utils.get_programming_language(args.v1)
     if language == "Python":
