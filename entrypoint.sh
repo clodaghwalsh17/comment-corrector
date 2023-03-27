@@ -23,7 +23,7 @@ do
 
     exit_code=$?
     if [ $exit_code -ne 0 ]; then
-        echo -e "::error ::Comment Corrector failed on the file "$file" due to the following error.\n$output"
+        echo "::error ::Comment Corrector failed on the file "$file" due to the following error:$output"
         exit 1
     fi
 
