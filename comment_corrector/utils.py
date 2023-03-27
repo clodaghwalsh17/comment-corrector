@@ -55,11 +55,13 @@ class Utils:
     
     @staticmethod
     def validate_files(files):
-        if (Utils.get_file_extension(files[0]) == Utils.get_file_extension(files[1])) and Utils.get_file_extension(files[0]) in Utils.get_supported_file_extensions():
-            return
+        if Utils.get_file_extension(files[0]) not in Utils.get_supported_file_extensions():
+            raise Exception("Error with input file.\nInput file is written in an unsupported language.")
+        if len(files) == 2 and Utils.get_file_extension(files[0]) != Utils.get_file_extension(files[1]):
+            raise Exception("Error with input files.\nInput files supplied are not written in the same language.") 
         else:
-            raise Exception("Error with input files.\nInput files supplied are either written in an unsupported language or the files are not written in the same language.") 
-        
+            return
+    
     @staticmethod
     def sort_comments(comment):
         return comment.line_number()

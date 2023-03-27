@@ -5,15 +5,18 @@ import sys
 
 def init_argparse():        
     parser = argparse.ArgumentParser()
-    parser.add_argument("file_v1", help = "Version 1 of file to be analysed")
-    parser.add_argument("file_v2", help = "Version 2 of file to be analysed")
+    parser.add_argument("v1", help = "Version 1 of file to be analysed")
+    parser.add_argument('-v2', help = "Optional version 2 of file to compare against")
     parser.add_argument('-w', '--words', type=str, help = "Optional custom words for spell checker")
     args = parser.parse_args()
     return args
     
 def run():     
     args = init_argparse()
-    files = (args.file_v1, args.file_v2)   
+    files = [args.v1]   
+
+    if args.v2 is not None:
+        files.append(args.v2)
 
     try:
         Utils.validate_files(files)
@@ -21,7 +24,7 @@ def run():
         print(e)  
         sys.exit()
 
-    language = Utils.get_programming_language(args.file_v1)
+    language = Utils.get_programming_language(args.v1)
     if language == "Python":
         analyser = PythonCommentAnalyser(files)
    
