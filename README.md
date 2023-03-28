@@ -16,7 +16,37 @@ See `supported_languages.json` for further details.
 
 ## How to Use
 
-### 1. Standalone Application
+### 1. GitHub Action
+
+Comment Corrector is intended to be ran as a GitHub Action. Simply add the action to a `.yaml` file defining a workflow.
+
+**NOTE**
+For the tool to operate as expected the checkout step preceding the step calling the tool must set the input `fetch-depth` to 0 as follows.
+
+```
+name: 'Check comments using Comment Corrector'
+
+on: workflow_dispatch
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    name: Use Comment Corrector Action
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Check Comments
+        uses: clodaghwalsh17/comment-corrector@beta
+        with:
+          custom-words-file: 'my_dictionary.txt'
+          
+```
+
+The optional input `custom-words-file` if used must point to a file in the .github/workflows directory.
+
+### 2. Standalone Application
 
 Comment Corrector can be ran as a standalone application if the following dependencies are accounted for. NOTE: This has only been tested in a Unix environment.
 

@@ -8,7 +8,6 @@ from comment_corrector.utils import Utils
 from abc import ABC, abstractclassmethod
 import sys
 import re
-import json
 
 class CommentAnalyser(ABC):
     COPYRIGHT_IDENTIFIERS = ["license", "licence", "copyright", "distributed", "warranty"]
@@ -21,20 +20,16 @@ class CommentAnalyser(ABC):
         self._code_word_regexes = code_word_regexes
         self._terminator = terminator
         self._reviewable_comments = []
-        self._spell_checker = SpellChecker()
-        self._semantic_diff = SemanticDiff(files)
+        self._spell_checker = None
+        self._full_cosmetic_analysis = False
         self._set_analysis_strategy()
     
-    def set_spellchecker_language(self, language):
-        self._spell_checker = SpellChecker(language=language)
-
     def set_spellchecker_custom_words(self, custom_words):
-        self._spell_checker = SpellChecker(custom_words_filepath=custom_words)
-
-    def set_spellchecker_settings(self, language, custom_words):
-        self._spell_checker = SpellChecker(language=language,custom_words_filepath=custom_words)
+        self._spell_checker = SpellChecker(custom_words_file=custom_words)
 
     def analyse_comments(self):
+        if self._spell_checker is None:
+            self._spell_checker = SpellChecker()
         self._analysis_strategy()
         self._reviewable_comments.sort(key=Utils.sort_comments)
         return self._reviewable_comments
@@ -43,34 +38,41 @@ class CommentAnalyser(ABC):
     def _outdated_analysis(self, tree):
         pass
 
-    def _set_tree(self):
-        tree = json.loads(self._semantic_diff.source_to_tree(self._files[0]))   
-        # self._tree is a dictionary with the keys type, pos, length, children      
-        self._tree = tree['root'] 
-
     def _set_analysis_strategy(self):
         extractor = CommentExtractor(Utils.get_mime_type(self._files[0]))
-        comments_file1 = extractor.extract_comments(self._files[0])
-        comments_file2 = extractor.extract_comments(self._files[1])
         
-        if comments_file1 and comments_file2:
-            self._analysis_strategy = self._full_analysis
-            self._comments = comments_file1 
-            self._comments_file2 = comments_file2
-            comments_set = set(comments_file2)
-            self._new_comments = comments_set.difference(comments_file1)
-            self._refactored_names, self._refactored_name_components = self._semantic_diff.refactored_names()
-            self._comment_index = 0
-            self._current_comment = self._comments[self._comment_index]
-            self._set_tree()
-            self._eof = int(self._tree['pos']) + int(self._tree['length']) 
-            self._edit_script_actions = self._semantic_diff.edit_script_actions()
-        elif comments_file2:
-            self._analysis_strategy = self._cosmetic_analysis
-            self._comments = comments_file2
+        if len(self._files) == 2:
+            comments_file1 = extractor.extract_comments(self._files[0])
+            comments_file2 = extractor.extract_comments(self._files[1])
+            
+            if comments_file1 and comments_file2:
+                self._analysis_strategy = self._full_analysis
+                self._full_cosmetic_analysis = True
+                self._comments = comments_file1 
+                self._comments_file2 = comments_file2
+                comments_set = set(comments_file2)
+                self._new_comments = comments_set.difference(comments_file1)
+                self._comment_index = 0
+                self._current_comment = self._comments[self._comment_index]
+                semantic_diff = SemanticDiff(self._files)
+                self._tree = semantic_diff.source_to_tree()
+                self._eof = int(self._tree['pos']) + int(self._tree['length']) 
+                self._edit_script_actions = semantic_diff.edit_script_actions()
+                self._refactored_names, self._refactored_name_components = semantic_diff.refactored_names()
+            elif comments_file2:
+                self._analysis_strategy = self._cosmetic_analysis
+                self._comments = comments_file2
+            else:
+                self._analysis_strategy = self._no_analysis 
         else:
-            self._analysis_strategy = self._no_analysis 
+            comments = extractor.extract_comments(self._files[0])
 
+            if comments:
+                self._analysis_strategy = self._cosmetic_analysis
+                self._comments = comments
+            else:
+                self._analysis_strategy = self._no_analysis 
+        
     def _next_comment(self):
         self._comment_index += 1
         if self._comment_index < len(self._comments):
@@ -200,8 +202,6 @@ class CommentAnalyser(ABC):
     def _cosmetic_check(self, comment):
         errors = []
         description = "" 
-        spelling_suggestion = self._check_spelling(comment.text()) 
-        refactored_names = self._find_refactored_names(comment.text()) 
 
         if comment.category() != Category.UNTRACKABLE:
             if self._is_commented_code(comment.text()) and comment.category() != Category.DOCUMENTATION:
@@ -210,16 +210,23 @@ class CommentAnalyser(ABC):
                 return errors
             
             if self._is_task_comment(comment.text()):
-                errors.append(CommentError.REMAINING_TASK)            
+                errors.append(CommentError.REMAINING_TASK)
+
+            spelling_suggestion = self._check_spelling(comment.text()) 
             if spelling_suggestion:
                 errors.append(CommentError.SPELLING_ERROR)
                 description += "* " + self._provide_spelling_suggestions(spelling_suggestion)
-            if refactored_names:
-                errors.append(CommentError.REFACTORED_NAME)
-                description += "* " + self._describe_refactored_names(refactored_names)
-            if self._contains_refactored_name_components(comment.text()):
-                errors.append(CommentError.REFACTORED_NAME)
-                description += "* " + "Name(s) referenced in this comment no longer exist\n"
+            
+            if self._full_cosmetic_analysis:
+                refactored_names = self._find_refactored_names(comment.text()) 
+
+                if refactored_names:
+                    errors.append(CommentError.REFACTORED_NAME)
+                    description += "* " + self._describe_refactored_names(refactored_names)
+                if self._contains_refactored_name_components(comment.text()):
+                    errors.append(CommentError.REFACTORED_NAME)
+                    description += "* " + "Name(s) referenced in this comment no longer exist\n"
+            
             if len(errors) > 0:
                 self._reviewable_comments.append(ReviewableComment(comment, errors, description=description))
         
@@ -231,7 +238,7 @@ class CommentAnalyser(ABC):
 
     def _no_analysis(self):
         # Exiting as no comments to review
-        sys.exit()
+        sys.exit(0)
 
     def _provide_spelling_suggestions(self, spelling_suggestions):
         suggestions = "The following word(s) are misspelt:\n"

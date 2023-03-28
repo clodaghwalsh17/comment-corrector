@@ -2,6 +2,7 @@ from comment_corrector.edit_script_action import EditScriptAction
 import subprocess
 import sys
 import re
+import json
 
 SEMANTIC_DIFF_TOOL_PATH = "target/semanticDiff-1-jar-with-dependencies.jar"
 
@@ -14,19 +15,24 @@ class SemanticDiff:
         self.__refactored_names = {}
         self.__refactored_name_components = []
         self.__diff()
-
-    def source_to_tree(self, file):
-        try:
-            return self.__gumtree_jsontree(file)
-        except Exception as e:
-            print(e)  
-            sys.exit()
+    
+    def source_to_tree(self):
+        return self.__convert_source_to_tree(self.__file1)
     
     def edit_script_actions(self):
         return self.__edit_script_actions
     
     def refactored_names(self):
         return self.__refactored_names, self.__refactored_name_components
+    
+    def __convert_source_to_tree(self, file):
+        try:
+            tree = json.loads(self.__gumtree_jsontree(file))
+            return tree['root']
+
+        except Exception as e:
+            print(e)  
+            sys.exit(1)
 
     def __diff(self):
         try:
@@ -34,7 +40,7 @@ class SemanticDiff:
             self.__process_edit_script(edit_script)
         except Exception as e:
             print(e)  
-            sys.exit()
+            sys.exit(1)
 
     def __gumtree_editscript(self):  
         process = subprocess.run(["java", "-jar", SEMANTIC_DIFF_TOOL_PATH, "editscript", self.__file1, self.__file2], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
