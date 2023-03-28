@@ -1,3 +1,5 @@
+from comment_corrector.comment_error import CommentError
+
 class ReviewableComment():
 
     def __init__(self, comment, errors, description=""):
@@ -35,6 +37,8 @@ class ReviewableComment():
                 errors += ", "
             err = ' '.join(error.name.split("_"))
             errors += err.capitalize()
+        if CommentError.REMAINING_TASK in self.__errors and CommentError.OUTDATED_COMMENT in self.__errors:
+            errors += "\nIt appears the task comment has been implemented."
         return errors
     
     def __hash__(self):
