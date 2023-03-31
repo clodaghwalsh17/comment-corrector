@@ -27,9 +27,7 @@ do
         continue
     fi
 
-    if [ "$output" = "" ]; then
-        echo "Comment Corrector identified no comments in need of review"
-    else
+    if [ "$output" != "" ]; then
         echo "::warning ::Comment Corrector identified comments in need of review in the file "$file""
         echo "::group::"$file""
         echo "$output"
