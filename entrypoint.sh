@@ -22,6 +22,8 @@ do
     fi    
 
     exit_code=$?
+    echo "$exit_code"
+    echo "$file"
     if [ $exit_code -ne 0 ]; then
         echo "::error ::Comment Corrector failed on the file "$file" due to the following error:$output"
         continue
