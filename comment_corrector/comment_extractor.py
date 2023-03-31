@@ -30,8 +30,8 @@ class CommentExtractor():
                     sys.exit(1) 
             
             return comments
-        except Exception as e:        
-            print(e)  
+        except Exception as e:   
+            print("The following error occurred while extracting comments from the input file: {}".format(e))    
             sys.exit(1)  
 
     def __find_python_documentation_comments(self, file):
