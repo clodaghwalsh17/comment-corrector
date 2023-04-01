@@ -58,7 +58,9 @@ class CommentAnalyser(ABC):
                 self._tree = semantic_diff.source_to_tree()
                 self._eof = int(self._tree['pos']) + int(self._tree['length']) 
                 self._edit_script_actions = semantic_diff.edit_script_actions()
-                self._refactored_names, self._refactored_name_components = semantic_diff.refactored_names()
+                self._refactored_names = semantic_diff.refactored_names()
+                self._deleted_names = semantic_diff.deleted_names()
+                self._unreferenced_names = semantic_diff.unreferenced_names()
             elif comments_file2:
                 self._analysis_strategy = self._cosmetic_analysis
                 self._comments = comments_file2
@@ -122,6 +124,14 @@ class CommentAnalyser(ABC):
         
         return False
     
+    def _find_deleted_names(self, comment_text):
+        deleted_names = []
+        for name in self._deleted_names:
+            result = self._match_phrase(name)(comment_text)
+            if result is not None:
+                deleted_names.append(name)
+        return deleted_names
+
     def _find_refactored_names(self, comment_text):
         refactored_names = {}
         for v,k in self._refactored_names.items():
@@ -130,9 +140,9 @@ class CommentAnalyser(ABC):
                 refactored_names[v] = k
         return refactored_names
 
-    def _contains_refactored_name_components(self, comment_text):
-        for component in self._refactored_name_components:
-            result = self._match_phrase(component)(comment_text)
+    def _contains_unreferenced_names(self, comment_text):
+        for name in self._unreferenced_names:
+            result = self._match_phrase(name)(comment_text)
             if result is not None:
                 return True
         return False
@@ -160,22 +170,23 @@ class CommentAnalyser(ABC):
         self._next_comment()    
 
     def _is_comment_editing_action(self, action, entity):
-        comment_editing_action = False
         file_position = int(entity['pos'])
         reference_point = file_position + int(entity['length'])
 
+        if action.affects_return():
+            return True
         if action.type() == "update-node" and file_position <= action.src_start() and action.src_start() <= reference_point:
-            comment_editing_action = True
+            return True
         elif action.type() == "insert-node" and file_position == action.dst_start():
-            comment_editing_action = True
+            return True
         elif action.type() == "move-tree" and file_position == action.src_start() and action.src_end() < self._eof:
-            comment_editing_action = True
+            return True
         elif action.type() == "move-tree" and file_position == action.dst_start() and action.dst_end() < self._eof:
-            comment_editing_action = True
+            return True
         elif action.type() == "delete-tree" and file_position == action.src_start():
-            comment_editing_action = True
+            return True
         
-        return comment_editing_action
+        return False
 
     def _register_outdated_comment(self, cosmetic_errors):
         comment_equivalent = self._get_comment_equivalent()
@@ -219,13 +230,17 @@ class CommentAnalyser(ABC):
             
             if self._full_cosmetic_analysis:
                 refactored_names = self._find_refactored_names(comment.text()) 
+                deleted_names = self._find_deleted_names(comment.text())
 
                 if refactored_names:
                     errors.append(CommentError.REFACTORED_NAME)
-                    description += "* " + self._describe_refactored_names(refactored_names)
-                if self._contains_refactored_name_components(comment.text()):
+                    description += "* " + self._list_refactored_names(refactored_names)
+                if self._contains_unreferenced_names(comment.text()):
                     errors.append(CommentError.REFACTORED_NAME)
                     description += "* " + "Name(s) referenced in this comment no longer exist\n"
+                if len(deleted_names) > 0:
+                    errors.append(CommentError.DELETED_NAME)
+                    description += "* " + self._list_deleted_names(deleted_names)
             
             if len(errors) > 0:
                 self._reviewable_comments.append(ReviewableComment(comment, errors, description=description))
@@ -246,8 +261,14 @@ class CommentAnalyser(ABC):
             suggestions += "- '{}' consider replacing with {}\n".format(v, k)
         return suggestions
     
-    def _describe_refactored_names(self, refactored_names):
-        description = "Name(s) referenced in this comment no longer exist:\n"
+    def _list_refactored_names(self, refactored_names):
+        description = "Name(s) referenced in this comment were refactored:\n"
         for v, k in refactored_names.items():
-            description += "- '{}' was replaced by '{}'\n".format(v, k) 
+            description += "- '{}' changed to '{}'\n".format(v, k) 
+        return description
+    
+    def _list_deleted_names(self, deleted_names):
+        description = "The following name(s) were deleted:\n"
+        for name in deleted_names:
+            description += "- {}\n".format(name) 
         return description

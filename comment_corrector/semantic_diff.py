@@ -13,7 +13,8 @@ class SemanticDiff:
         self.__file2 = files[1]
         self.__edit_script_actions = []
         self.__refactored_names = {}
-        self.__refactored_name_components = []
+        self.__unreferenced_names = []
+        self.__deleted_names = []
         self.__diff()
     
     def source_to_tree(self):
@@ -23,13 +24,18 @@ class SemanticDiff:
         return self.__edit_script_actions
     
     def refactored_names(self):
-        return self.__refactored_names, self.__refactored_name_components
+        return self.__refactored_names
+    
+    def deleted_names(self):
+        return self.__deleted_names
+
+    def unreferenced_names(self):
+        return self.__unreferenced_names
     
     def __convert_source_to_tree(self, file):
         try:
             tree = json.loads(self.__gumtree_jsontree(file))
             return tree['root']
-
         except Exception as e:
             print(e)  
             sys.exit(1)
@@ -102,9 +108,9 @@ class SemanticDiff:
             if action == '':
                 continue
             
-            type = action[:action.index('\n')]
+            action_type = action[:action.index('\n')]
             # Shorten edit script produced by removing action types that provide little information
-            if type == "delete-node" or type == "insert-tree":
+            if action_type == "delete-node" or action_type == "insert-tree":
                 continue
 
             file_positions = re.search("\[*([0-9,]+)\]", action).group(1).split(",")
@@ -118,21 +124,22 @@ class SemanticDiff:
                 if self.__is_valid_name(initial_name):
                     updated_name = replace_info.split(" ")[3]
                     self.__refactored_names[initial_name] = updated_name         
+                    self._extract_unreferenced_names(initial_name)                    
 
-                    if "_" in initial_name:
-                        self.__refactored_name_components.append(' '.join(initial_name.split("_")))
-                    if "-" in initial_name:
-                        self.__refactored_name_components.append(' '.join(initial_name.split("-")))
-                    if re.search(r'[A-Z]', initial_name) is not None:
-                        self.__refactored_name_components.append(' '.join(re.split('[A-Z]', initial_name)))                   
+            if action_type == "delete-tree":
+                name_index = action.find('name')
+                name = action[name_index:].removeprefix("name: ").split(" ")[0]
+                self.__deleted_names.append(name)
+                self._extract_unreferenced_names(name)
 
             to_index = action.find('to\n')
             if to_index != -1:
                 dst_start = int(re.search("\[*([0-9,]+)\]", action[to_index:]).group(1).split(",")[0])
                 dst_end = int(re.search("\[*([0-9,]+)\]", action[to_index:]).group(1).split(",")[1])
-                self.__edit_script_actions.append(EditScriptAction(type, int(file_positions[0]), int(file_positions[1]), dst_start=dst_start, dst_end=dst_end))
+                affects_return = re.search('return', action[to_index:], re.IGNORECASE) is not None
+                self.__edit_script_actions.append(EditScriptAction(action_type, int(file_positions[0]), int(file_positions[1]), dst_start=dst_start, dst_end=dst_end, affects_return=affects_return))
             else:
-                self.__edit_script_actions.append(EditScriptAction(type, int(file_positions[0]), int(file_positions[1])))    
+                self.__edit_script_actions.append(EditScriptAction(action_type, int(file_positions[0]), int(file_positions[1])))    
 
     def __gumtree_jsontree(self, file):
         process = subprocess.run(["java", "-jar", SEMANTIC_DIFF_TOOL_PATH, "jsontree", file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -140,6 +147,14 @@ class SemanticDiff:
             return process.stdout
         else:
             raise Exception("An error occurred during analysis. A Java program using the GumTree API produces a tree like representation of the source code in JSON format. Java program error: {}".format(process.stderr))
-        
+
     def __is_valid_name(self, text):
         return re.search("[a-zA-Z]", text) is not None
+
+    def _extract_unreferenced_names(self, name):
+        if "_" in name:
+            self.__unreferenced_names.append(' '.join(name.split("_")))
+        if "-" in name:
+            self.__unreferenced_names.append(' '.join(name.split("-")))
+        if re.search(r'[A-Z]', name) is not None:
+            self.__unreferenced_names.append(' '.join(re.split('[A-Z]', name))) 
