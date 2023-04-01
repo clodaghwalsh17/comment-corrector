@@ -16,6 +16,7 @@ class PythonCommentAnalyser(CommentAnalyser):
             return
 
         entity_children = entity['children']
+        i = 0
 
         if self.__introductory_comment(entity):
             # Various types of "comments" may appear before the body of the code
@@ -31,23 +32,28 @@ class PythonCommentAnalyser(CommentAnalyser):
                 elif self._current_comment.category() == Category.UNTRACKABLE:
                     self._next_comment()
                 else:
-                    self._check_relevance(entity)
+                    suite_indexes = self.__find_suite_indexes(entity_children)
+                    # Found a comment describing a scrip or a line of code at the beginning of the file
+                    if len(suite_indexes) == 0:
+                        self._check_relevance(entity_children[0])
+                    # Accounts for class definition or function definition at beginning of file
+                    else:
+                        self._check_relevance(entity)
         
         if self.__comment_at_root(entity, entity_children[0]):
             print("Root found")
             self._check_relevance(entity)
 
-        i = 0
         while i < len(entity_children) and self._comment_index < len(self._comments):
             self.__match_comment(entity_children[i], entity_children[i-1])
 
             # Recursively call match for all suites of the child
             # The suite holds the main body of code for structures such as classes, functions, for loops, while loops and if statements
             children = entity_children[i]['children']
-            suites_indexes = self.__find_suite_indexes(children)
+            suite_indexes = self.__find_suite_indexes(children)
 
-            if suites_indexes:
-                for suite_index in suites_indexes:
+            if suite_indexes:
+                for suite_index in suite_indexes:
                     self._outdated_analysis(children[suite_index])
             
             i += 1
