@@ -17,6 +17,9 @@ class SemanticDiff:
         self.__deleted_names = []
         self.__diff()
     
+    # Return a dictionary with the keys type, pos, length, children  
+    # The value for type, pos, length is a string
+    # The value for children is a list of dictionaries with the keys mentioned above, this means the tree returned is a recursive data structure
     def source_to_tree(self):
         return self.__convert_source_to_tree(self.__file1)
     
@@ -109,11 +112,15 @@ class SemanticDiff:
                 continue
             
             action_type = action[:action.index('\n')]
-            # Shorten edit script produced by removing action types that provide little information
-            if action_type == "delete-node" or action_type == "insert-tree":
-                continue
-
             file_positions = re.search("\[*([0-9,]+)\]", action).group(1).split(",")
+            affects_param = re.search('param', action, re.IGNORECASE) is not None  
+            affects_return = re.search('return', action, re.IGNORECASE) is not None
+
+            # Shorten edit script produced by removing action types that provide little information
+            if action_type == "insert-tree" and not affects_param:
+                continue
+            elif action_type == "delete-node" and not affects_return:
+                continue                  
             
             replace_index = action.find('replace')
             if replace_index != -1:
@@ -124,22 +131,22 @@ class SemanticDiff:
                 if self.__is_valid_name(initial_name):
                     updated_name = replace_info.split(" ")[3]
                     self.__refactored_names[initial_name] = updated_name         
-                    self._extract_unreferenced_names(initial_name)                    
+                    self.__extract_unreferenced_names(initial_name)                    
 
             if action_type == "delete-tree":
                 name_index = action.find('name')
-                name = action[name_index:].removeprefix("name: ").split(" ")[0]
-                self.__deleted_names.append(name)
-                self._extract_unreferenced_names(name)
+                if name_index != -1:
+                    name = action[name_index:].removeprefix("name: ").split(" ")[0]
+                    self.__deleted_names.append(name)
+                    self.__extract_unreferenced_names(name)            
 
             to_index = action.find('to\n')
             if to_index != -1:
                 dst_start = int(re.search("\[*([0-9,]+)\]", action[to_index:]).group(1).split(",")[0])
                 dst_end = int(re.search("\[*([0-9,]+)\]", action[to_index:]).group(1).split(",")[1])
-                affects_return = re.search('return', action[to_index:], re.IGNORECASE) is not None
-                self.__edit_script_actions.append(EditScriptAction(action_type, int(file_positions[0]), int(file_positions[1]), dst_start=dst_start, dst_end=dst_end, affects_return=affects_return))
+                self.__edit_script_actions.append(EditScriptAction(action_type, int(file_positions[0]), int(file_positions[1]), dst_start=dst_start, dst_end=dst_end, affects_function=affects_param or affects_return))
             else:
-                self.__edit_script_actions.append(EditScriptAction(action_type, int(file_positions[0]), int(file_positions[1])))    
+                self.__edit_script_actions.append(EditScriptAction(action_type, int(file_positions[0]), int(file_positions[1]), affects_function=affects_param or affects_return))    
 
     def __gumtree_jsontree(self, file):
         process = subprocess.run(["java", "-jar", SEMANTIC_DIFF_TOOL_PATH, "jsontree", file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -151,7 +158,7 @@ class SemanticDiff:
     def __is_valid_name(self, text):
         return re.search("[a-zA-Z]", text) is not None
 
-    def _extract_unreferenced_names(self, name):
+    def __extract_unreferenced_names(self, name):
         if "_" in name:
             self.__unreferenced_names.append(' '.join(name.split("_")))
         if "-" in name:

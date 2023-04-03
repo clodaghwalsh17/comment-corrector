@@ -38,6 +38,10 @@ class CommentAnalyser(ABC):
     def _outdated_analysis(self, tree):
         pass
 
+    @abstractclassmethod
+    def _is_comment_editing_action(self, action, node):
+        pass
+
     def _set_analysis_strategy(self):
         extractor = CommentExtractor(Utils.get_mime_type(self._files[0]))
         
@@ -168,25 +172,6 @@ class CommentAnalyser(ABC):
                         break
 
         self._next_comment()    
-
-    def _is_comment_editing_action(self, action, entity):
-        file_position = int(entity['pos'])
-        reference_point = file_position + int(entity['length'])
-
-        if action.affects_return():
-            return True
-        if action.type() == "update-node" and file_position <= action.src_start() and action.src_start() <= reference_point:
-            return True
-        elif action.type() == "insert-node" and file_position == action.dst_start():
-            return True
-        elif action.type() == "move-tree" and file_position == action.src_start() and action.src_end() < self._eof:
-            return True
-        elif action.type() == "move-tree" and file_position == action.dst_start() and action.dst_end() < self._eof:
-            return True
-        elif action.type() == "delete-tree" and file_position == action.src_start():
-            return True
-        
-        return False
 
     def _register_outdated_comment(self, cosmetic_errors):
         comment_equivalent = self._get_comment_equivalent()
