@@ -1,6 +1,7 @@
 from comment_corrector.comment_analyser import CommentAnalyser
 from comment_corrector.category import Category
 from comment_corrector.utils import Utils
+import string
 
 class PythonCommentAnalyser(CommentAnalyser):
 
@@ -25,9 +26,7 @@ class PythonCommentAnalyser(CommentAnalyser):
                 occupied_space += self._current_comment.real_length()
 
                 if self._is_copyright_comment(self._current_comment.text()):
-                    self._check_comment()
-                elif self._current_comment.category() == Category.DOCUMENTATION:
-                    self._check_comment()                    
+                    self._check_comment()                  
                 elif self._current_comment.category() == Category.UNTRACKABLE:
                     self._next_comment()
                 else:
@@ -44,6 +43,10 @@ class PythonCommentAnalyser(CommentAnalyser):
             entity2 = entity_children[i-1]
             if self.__suitable_comment_gap(entity1, entity2) or self.__has_inline_comment(entity1):
                 self._check_relevance(entity1)
+            
+            if self.__is_doc_comment(entity1) and entity2['type'] == "funcdef":
+                print("checking doc fn relevancy")
+                self._check_relevance(entity2)
 
             # Recursively call match for all suites of the child
             # The suite holds the main body of code for structures such as classes, functions, for loops, while loops and if statements
@@ -69,9 +72,9 @@ class PythonCommentAnalyser(CommentAnalyser):
             return True
         elif action.type() == "insert-node" and file_position == action.dst_start():
             return True
-        elif action.type() == "move-tree" and file_position == action.src_start() and action.src_end() < self._eof:
+        elif action.type() == "move-tree" and file_position == action.src_start() and action.src_end() <= self._eof:
             return True
-        elif action.type() == "move-tree" and file_position == action.dst_start() and action.dst_end() < self._eof:
+        elif action.type() == "move-tree" and file_position == action.dst_start() and action.dst_end() <= self._eof:
             return True
         elif action.type() == "delete-tree" and file_position == action.src_start():
             return True
@@ -120,6 +123,13 @@ class PythonCommentAnalyser(CommentAnalyser):
 
     def __introductory_comment(self, entity): # Q could move to abstract class
         return entity['type'] == 'file_input' and entity['pos'] != 0
+
+    def __is_doc_comment(self, entity):
+        if entity['type'] == "simple_stmt" and entity['children'][0]['type'] == "string":
+            current_comment = self._current_comment.text().translate({ord(c): None for c in string.whitespace})
+            doc_comment = entity['children'][0]['label'].removeprefix("\"\"\"")
+            doc_comment = doc_comment.removesuffix("\"\"\"").translate({ord(c): None for c in string.whitespace})
+            return self._current_comment.category() == Category.DOCUMENTATION and current_comment == doc_comment
 
     def __find_last_child(self, entity):
         if not entity:
