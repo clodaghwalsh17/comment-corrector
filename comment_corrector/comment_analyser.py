@@ -58,8 +58,7 @@ class CommentAnalyser(ABC):
         if len(self._files) == 2:
             comments_file1 = extractor.extract_comments(self._files[0])
             comments_file2 = extractor.extract_comments(self._files[1])
-            print("comments file 1 {}".format(comments_file1))
-            print("comments file 2 {}".format(comments_file2))
+
             if comments_file1 and comments_file2:
                 semantic_diff = SemanticDiff(self._files)
                 self._edit_script_actions = semantic_diff.edit_script_actions()
