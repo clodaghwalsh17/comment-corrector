@@ -120,9 +120,6 @@ class CommentAnalyser(ABC):
     def _is_valid_weblink(self, text):
         return re.search("https?:|www/.", text) is not None 
     
-    def _match_phrase(self, word):
-        return re.compile(r'\b({})\b'.format(word), flags=re.IGNORECASE).search
-
     def _is_commented_code(self, comment_text):
         if self._terminator and re.search(self._terminator, comment_text) is not None:
             return True
