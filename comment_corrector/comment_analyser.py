@@ -225,13 +225,13 @@ class CommentAnalyser(ABC):
         description = "" 
 
         if comment.category() != Category.UNTRACKABLE:
+            if self._is_task_comment(comment.text()):
+                errors.append(CommentError.REMAINING_TASK)
+
             if self._is_commented_code(comment.text()) and comment.category() != Category.DOCUMENTATION:
                 errors.append(CommentError.COMMENTED_CODE)
                 self._reviewable_comments.append(ReviewableComment(comment, errors))
-                return errors
-            
-            if self._is_task_comment(comment.text()):
-                errors.append(CommentError.REMAINING_TASK)
+                return errors            
 
             spelling_suggestion = self._check_spelling(comment.text()) 
             if spelling_suggestion:
