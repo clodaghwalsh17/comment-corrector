@@ -1,10 +1,12 @@
 from comment_corrector.comment_error import CommentError
+import re
 
 class ReviewableComment():
 
     def __init__(self, comment, errors, description=""):
         self.__text = comment.text()
         self.__line_number = comment.line_number()
+        self.__is_multiline = comment.is_multiline()
         self.__errors = []
         self.__errors.extend(errors)
         self.__description = description
@@ -41,6 +43,14 @@ class ReviewableComment():
             errors += "\nIt appears the task comment has been implemented."
         return errors
     
+    def summary(self):
+        if self.__is_multiline:            
+            summary = re.split("\s\s+|\.", self.__text)
+            summary = summary[0].strip() + " ..."
+            return summary
+        else:
+            return self.__text
+    
     def __hash__(self):
         return hash((self.__text))
     
@@ -51,9 +61,9 @@ class ReviewableComment():
     
     def __str__(self):
         if self.__description == "":
-            return "Comment '{}' on line {} needs attention.\nReason: {}\n\n".format(self.__text, self.__line_number, self.print_errors())
+            return "Comment '{}' on line {} needs attention.\nReason: {}\n\n".format(self.summary(), self.__line_number, self.print_errors())
         else:
-            return "Comment '{}' on line {} needs attention.\nReason: {}\nAdditional Information:\n{}\n".format(self.__text, self.__line_number, self.print_errors(), self.__description)
+            return "Comment '{}' on line {} needs attention.\nReason: {}\nAdditional Information:\n{}\n".format(self.summary(), self.__line_number, self.print_errors(), self.__description)
 
     def __repr__(self):
         return 'ReviewableComment(%s, %s, %s, %s)' % (self.__text, self.__line_number, self.__errors, self.__description)  
