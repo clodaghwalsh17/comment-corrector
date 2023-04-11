@@ -1,4 +1,5 @@
 #!/bin/bash -l
+successful_run=0
 files=$(cd / && python3 retrieve_files.py)
 
 for file in ${files[@]}; 
@@ -24,12 +25,11 @@ do
     exit_code=$?
     if [ $exit_code -ne 0 ]; then
         echo "::error ::Comment Corrector failed on the file "$file" due to the following error:$output"
-        exit 1
+        successful_run=1
+        continue
     fi
 
-    if [ "$output" = "" ]; then
-        echo "Comment Corrector identified no comments in need of review"
-    else
+    if [ "$output" != "" ]; then
         echo "::warning ::Comment Corrector identified comments in need of review in the file "$file""
         echo "::group::"$file""
         echo "$output"
@@ -38,4 +38,4 @@ do
 
 done
 
-exit 0
+exit $successful_run

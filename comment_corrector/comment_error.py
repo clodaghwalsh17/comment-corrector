@@ -6,3 +6,4 @@ class CommentError(Enum):
     COMMENTED_CODE = 3
     SPELLING_ERROR = 4
     REFACTORED_NAME = 5
+    DELETED_NAME = 6

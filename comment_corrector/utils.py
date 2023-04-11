@@ -1,5 +1,6 @@
 import os
 import json
+import re
 
 SOURCE = "supported_languages.json"
 
@@ -64,4 +65,8 @@ class Utils:
     
     @staticmethod
     def sort_comments(comment):
-        return comment.line_number()
+        return comment.line_number()    
+    
+    @staticmethod
+    def match_phrase(word):
+        return re.compile(r'\b({})\b'.format(word), flags=re.IGNORECASE).search

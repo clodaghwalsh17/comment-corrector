@@ -2,13 +2,11 @@ from comment_parser import comment_parser
 from comment_corrector.comment import Comment
 from comment_corrector.category import Category
 from comment_corrector.utils import Utils
+from comment_corrector.docstring_extractor import DocstringExtractor
 import sys
 import re
 
 class CommentExtractor():
-
-    DOC_COMMENT_KEYWORDS = ["parameter", "parameters", "param", "params", "return", "returns", \
-    "input", "output", "type", "argument", "arguments", "arg", "args", "kwargs", "accepts", "function", "call"]
 
     def __init__(self, mime_type):
         self.__mime_type = mime_type
@@ -20,55 +18,16 @@ class CommentExtractor():
             if self.__mime_type == "text/x-python":                         
                 comments = self.__process_python_comments(file, comments)
                 
-                try:
-                    doc_comments = self.__find_python_documentation_comments(file)
-                    if doc_comments:
-                        comments.extend(doc_comments)
-                        comments.sort(key=Utils.sort_comments) 
-                except Exception as e:        
-                    print(e)  
-                    sys.exit(1) 
+                docstring_extractor = DocstringExtractor(file)
+                docstrings = docstring_extractor.extract_docstrings()
+                if docstrings:
+                    comments.extend(docstrings)
+                    comments.sort(key=Utils.sort_comments)
             
             return comments
-        except Exception as e:        
-            print(e)  
+        except Exception as e:   
+            print("The following error occurred while extracting comments from the input file: {}".format(e))    
             sys.exit(1)  
-
-    def __find_python_documentation_comments(self, file):
-        single_quote_pattern = "'{3}[ \t\n\r]*([<>%!@#%^&?/¬~|\\\\`'._,;:a-zA-Z0-9\+-/\*=\(\)\[\]\{\}\n ]+)'{3}" 
-        double_quote_pattern = "\"{3}[ \t\n\r]*([<>%!@#%^&?/¬~|\\\\`'._,;:a-zA-Z0-9\+-/\*=\(\)\[\]\{\}\n ]+)\"{3}" 
-        
-        single_quote_doc_comments = self.__match_documentation_comments(file, re.compile(single_quote_pattern))
-        double_quote_doc_comments = self.__match_documentation_comments(file, re.compile(double_quote_pattern))
-
-        if single_quote_doc_comments and double_quote_doc_comments:
-            raise Exception("Comment Corrector does not support files with inconsistent Python documentation comments. Please review this as it is bad practice.")
-        elif single_quote_doc_comments:
-            return single_quote_doc_comments
-        elif double_quote_doc_comments:
-            return double_quote_doc_comments
-
-    def __match_documentation_comments(self, file, match):
-        doc_comments = []
-        with open(file) as f:
-            code = f.read()
-
-        end='.*\n'
-        line = []
-        for iter in re.finditer(end, code):
-            line.append(iter.end())
-        for iter in re.finditer(match, code):
-            string = iter.group(1)
-
-            is_doc_comment = False
-            for keyword in self.DOC_COMMENT_KEYWORDS:
-                is_doc_comment = is_doc_comment or keyword in string or keyword.capitalize() in string
-            
-            if is_doc_comment:
-                line_number = next(i for i in range(len(line)) if line[i] > iter.start(1))
-                doc_comments.append(Comment(string, line_number, True, category=Category.DOCUMENTATION))            
-    
-        return doc_comments
 
     def __process_python_comments(self, file, comment_list):
         # Group multiline comments and remove any untrackable items including shebang and encoding

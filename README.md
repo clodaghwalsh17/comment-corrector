@@ -6,11 +6,9 @@ Comment Corrector is a GitHub Action that analyses source code for any discrepan
 
 ## Supported Languages
 
-Comment Corrector is capable of analysing source code written in the following languages:
+Comment Corrector is capable of analysing source code written in Python.
 
-- Java
-- Python
-- C
+The tool is designed to easily extend to support Java and C.
 
 See `supported_languages.json` for further details.
 
@@ -44,11 +42,19 @@ jobs:
           
 ```
 
-The optional input `custom-words-file` if used must point to a file in the .github/workflows directory.
+The optional input `custom-words-file` if used must point to a file in the `.github/workflows` directory of the repository in which the workflow is run.
 
 ### 2. Standalone Application
 
-Comment Corrector can be ran as a standalone application if the following dependencies are accounted for. NOTE: This has only been tested in a Unix environment.
+Comment Corrector can be ran as a standalone application if the following dependencies are accounted for, assuming the tool is ran in a Unix environment.
+
+#### Running Comment Corrector
+
+Comment Corrector can be ran by issuing the command below. The argument `-v2` is optional and may be specified when the user wishes to compare two versions of a file for comments that may be outdated. If the user simply requires cosmetic analysis of the comments this argument may be omitted.
+
+```
+python3 -m comment_corrector path/v1.py -v2 path/v2.py
+```
 
 #### Python Dependencies
 

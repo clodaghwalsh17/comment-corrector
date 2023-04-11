@@ -7,3 +7,6 @@ www
 param
 func
 fn
+https
+str
+num
