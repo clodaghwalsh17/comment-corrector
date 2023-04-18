@@ -4,11 +4,22 @@
 
 Comment Corrector is a GitHub Action that analyses source code for any discrepancies between a comment and the code it describes. Comment Corrector is predominately written in Python3, while the GumTree API is called through Java.
 
+## Features
+
+Comment Corrector is capable of identifying the following:
+
+- Outdated comments
+- Comments with spelling mistakes
+- Remaining task comments
+- Potentially implemented task comments
+- Commented out code
+- Comments that reference names that have been refactored or deleted
+
 ## Supported Languages
 
 Comment Corrector is capable of analysing source code written in Python.
 
-The tool is designed to easily extend to support Java and C.
+The tool is designed to easily extend to support Java and C in the future.
 
 See `supported_languages.json` for further details.
 
@@ -16,7 +27,7 @@ See `supported_languages.json` for further details.
 
 ### 1. GitHub Action
 
-Comment Corrector is intended to be ran as a GitHub Action. Simply add the action to a `.yaml` file defining a workflow.
+Comment Corrector is intended to be ran as a GitHub Action. Simply add the action to a `.yaml` file defining a workflow. Visit the [comment-corrector-demo](https://github.com/clodaghwalsh17/comment-corrector-demo) repository for example usage of the action. 
 
 **NOTE**
 For the tool to operate as expected the checkout step preceding the step calling the tool must set the input `fetch-depth` to 0 as follows.
@@ -76,4 +87,7 @@ The necessary GumTree API calls are made and packaged into a JAR file, refer to 
 - [cgum](https://github.com/GumTreeDiff/cgum)
 - [tree-sitter-parser](https://github.com/GumTreeDiff/tree-sitter-parser)
 
-NOTE: It is recommended to run the command `maven clean install` to ensure the JAR file is up to date.
+#### Additional Points
+
+- It is recommended to run the command `maven clean install` to ensure the JAR file is up to date before running Comment Corrector as a standalone application.
+- Should there be any difficulty in running the tool as a standalone application in a Unix environment the `Dockerfile` under the docker folder details the environment set up in full.
